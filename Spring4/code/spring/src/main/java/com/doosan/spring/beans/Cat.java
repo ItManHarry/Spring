@@ -14,4 +14,8 @@ public class Cat implements InitializingBean,DisposableBean {
 		System.out.println("-----------------destroy of class Cat----------------------");
 		
 	}
+	
+	public void show(){
+		System.out.println("I am a cat");
+	}
 }
