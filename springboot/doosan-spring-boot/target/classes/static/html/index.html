@@ -4,8 +4,8 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 		<title>Spring Boot Static Page</title>
-		<link rel = "stylesheet" href = "../css/bootstrap.min.css" media="screen"/>
 		<link rel="shortcut icon" type="image/x-icon" href="../images/logoes/way.ico" media="screen" />
+		<link rel = "stylesheet" href = "../css/bootstrap.min.css" media="screen"/>
 		<script type = "text/javascript" src = "../js/bootstrap.min.js" charset="UTF-8"></script>
 		<script type = "text/javascript" src = "../js/jquery-1.11.3.min.js" charset="UTF-8"></script>
 		<script type = "text/javascript" src = "../js/vue.js" charset="UTF-8"></script>
@@ -17,9 +17,9 @@
 			<div class = "row">
 				<div class = "col-sm-6 col-sm-offset-6 text-right">
 					<div class="input-group">
-	                    <input type="text" name = "no" id = "no" placeholder = "决裁单号......" class="form-control input-sm">
+	                    <input type="text" name = "no" id = "no" placeholder = "决裁单号......" class="form-control input-sm" v-model = "searchParam"/>
 	                    <span class="input-group-btn">
-	                        <button class="btn btn-default btn-sm" type="button" id = "search"><i class = "glyphicon glyphicon-search"></i>&nbsp;查找</button>
+	                        <button class="btn btn-default btn-sm" type="button" id = "search" @click = "doSearch"><i class = "glyphicon glyphicon-search"></i>&nbsp;查找</button>
 	                    </span>
 	                </div>
 				</div> 
@@ -30,5 +30,18 @@
 				</div>
 			</div>
 		</div>
+		<script>
+			var vm = new Vue({
+				el:"#contentdiv",
+				data:{
+					searchParam:""					
+				},
+				methods:{
+					doSearch:function(){
+						alert(this.searchParam)
+					}
+				}
+			})
+		</script>
 	</boody>
 </html>
