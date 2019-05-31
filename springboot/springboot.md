@@ -23,7 +23,7 @@
 	  <dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 	  </dependencies>
 	</project>
@@ -240,3 +240,210 @@
 ## SpringBoot使用静态文件
 
 - 在resource下创建"static"文件夹，这下面的所有的资源即可通过地址栏直接进行访问了。
+
+## SpringBoot文件上传
+
+- 上传代码
+
+```java
+	package com.doosan.sb.controller.upload
+	import org.springframework.stereotype.Controller
+	import org.springframework.web.bind.annotation.RequestMapping
+	import org.springframework.web.bind.annotation.RequestParam
+	import org.springframework.web.bind.annotation.RestController
+	import org.springframework.web.multipart.MultipartFile
+	@RestController
+	@RequestMapping("/file")
+	class UploadController {
+		@RequestMapping("/doUpload")
+		//@RequestParam中的参数对应前端的file的name属性,也可不使用此注解，直接将form中的input的name属性改为"file"
+		def upload(@RequestParam("attach")MultipartFile file){
+			println "File Name : " + file.getOriginalFilename()
+			println "File type : " + file.getContentType()
+			//上传路径
+			file.transferTo(new File("c:/" + file.getOriginalFilename()))
+			result.put("result", "success")
+			return result
+		}	
+		
+		def result = [:]
+	}
+```
+
+- 修改文件上传大小限制
+
+	1.在resource 下新增一配置文件，application.properties
+	
+	2.设置属性:
+		spring.http.multipart.maxFileSize=100MB		//单个文件大小设置
+		spring.http.multipart.maxRequestSize=200MB	//单个请求总文件大小
+		
+## SpringBoot视图层(Freemarker,jsp,thymeleaf)
+
+- Freemarker
+
+	1.pom.xml文件中导入Freemarker依赖包
+	
+```xml
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-freemarker</artifactId>
+	</dependency>
+```
+
+	2.编写controller
+	
+```java
+	package com.doosan.sb.controller.view
+	import org.springframework.stereotype.Controller
+	import org.springframework.ui.Model
+	import org.springframework.web.bind.annotation.RequestMapping
+	import com.doosan.sb.beans.Users
+	@Controller
+	class FreemarkerController {
+		@RequestMapping("/freemarker/list")
+		def toList(Model model){
+			def list = []
+			list << new Users("name":"Harry", "age":20)
+			list << new Users("name":"Tom", "age":23)
+			list << new Users("name":"Jack", "age":22)
+			//跳转到list.ftl页面
+			model.addAttribute("list", list)
+			return "view/freemarker/list"
+		}
+	}
+```
+
+	3.建立list.ftl模板页面，在resource目录下创建templates目录存放所有的模板文件，再创建子目录/view/freemarker
+	
+	4.编写freemarker模板文件(list.ftl)
+	
+```
+	<html>
+		<title>Freemarker to list the Users</title>
+		<meta charset = "utf-8">
+		<body>
+			<h3>Users List</h3>
+			<table>
+				<tr>
+					<th>Name</th>
+					<th>Age</th>
+				</tr>
+				<#list list as users>
+					<tr>
+						<td>${users.name}</td>
+						<td>${users.age}</td>
+					</tr>
+				</#list>
+			</table>
+		</body>
+	</html>
+```
+
+- Jsp
+
+	1.pom.xml文件中导入jsp依赖包
+	
+```xml
+	<dependency>
+		<groupId>javax.servlet</groupId>
+		<artifactId>jstl</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.tomcat.embed</groupId>
+		<artifactId>tomcat-embed-jasper</artifactId>
+		<scope>provided</scope>
+	</dependency>
+```	
+
+	2.在application.properties文件增加视图解析配置
+	
+```
+	spring.mvc.view.prefix=/WEB-INF/jsp/
+	spring.mvc.view.suffix=.jsp
+```
+	
+	3.编写controller
+	
+```java
+	package com.doosan.sb.controller.view
+	import org.springframework.stereotype.Controller
+	import org.springframework.ui.Model
+	import org.springframework.web.bind.annotation.RequestMapping
+	import com.doosan.sb.beans.Users
+	@Controller
+	class JspController {
+		@RequestMapping("/jsp/list")
+		def toList(Map map){
+			def list = []
+			list << new Users("name":"Harry", "age":20)
+			list << new Users("name":"Tom", "age":23)
+			list << new Users("name":"Jack", "age":22)
+			//跳转到list.jsp页面
+			map.put("list", list)
+			return "users/list"
+		}
+	}
+```
+
+	4.在src/main下新增webapp文件夹，在webapp下新增WEB-INF,在WEB-INF新增jsp文件夹，编写jsp文件即可
+	
+- Thymeleaf
+
+	1.pom.xml文件中导入Freemarker依赖包
+	
+```xml
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-thymeleaf</artifactId>
+	</dependency>
+```
+
+	2.编写controller
+	
+```java
+	package com.doosan.sb.controller.view
+	import org.springframework.stereotype.Controller
+	import org.springframework.ui.Model
+	import org.springframework.web.bind.annotation.RequestMapping
+	import com.doosan.sb.beans.Users
+	@Controller
+	class ThymeleafController {
+		@RequestMapping("/thymeleaf/list")
+		def toList(Map map){
+			def list = []
+			list << new Users("name":"Harry", "age":20)
+			list << new Users("name":"Tom", "age":23)
+			list << new Users("name":"Jack", "age":22)
+			//跳转到list.jsp页面
+			map.put("list", list)
+			map.put("message", "Hello Thymeleaf")
+			//跳转至list.html文件
+			return "thymeleaf/list"
+		}
+	}
+```
+
+	3.在"resource/templates/thymeleaf"下新增list.html文件
+	
+```html
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<title>Thymeleaf Page</title>
+		</head>
+		<body>
+			<h1 th:text = "${message}"></h1>
+		</body>
+	</html>
+```
+
+	注：报某个标签元素为未终止，原因是Thymeleaf3版本以下有这个校验，解决方法将thymeleaf升级到3.0以上，修改pom.xml文件：
+
+```
+	<properties>
+		<java.version>1.8</java.version>
+		<thymeleaf.version>3.0.2.RELEASE</thymeleaf.version>
+		<thymeleaf-layout-dialect.version>2.0.4</thymeleaf-layout-dialect.version>
+	</properties>
+```	

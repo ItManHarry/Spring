@@ -10,7 +10,7 @@
 		<script type = "text/javascript" src = "../js/jquery-1.11.3.min.js" charset="UTF-8"></script>
 		<script type = "text/javascript" src = "../js/vue.js" charset="UTF-8"></script>
 	</head>
-	<boody>
+	<body>
 		<div class="container-fluid" id = "contentdiv"> 
 			<h1>Spring Static resource.</h1>
 			<hr/>
@@ -29,6 +29,14 @@
 					<img src = "../images/sf.png">
 				</div>
 			</div>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<form action="file/upload" method="post" enctype="multipart/form-data">
+						<input type = "file" class = "form-control" name = "attach"/><br>
+						<input type = "submit" value = "Upload" class = "form-control"/>
+					</form>
+				</div>
+			</div>
 		</div>
 		<script>
 			var vm = new Vue({
@@ -43,5 +51,5 @@
 				}
 			})
 		</script>
-	</boody>
+	</body>
 </html>
