@@ -494,3 +494,109 @@
 		</body>
 	</html>
 ```
+
+
+## Thymeleaf语法
+
+- 变量输出
+
+```html
+	<h1 th:text = "${name}"></h1>
+```	
+
+- 条件判断
+
+	1.th:if
+	
+```html
+	<div class = "row">
+		<div class = "col-sm-12" th:if = "${gender} == 'M'">
+			<h3>The gender is Male</h3>
+		</div> 
+		<div class = "col-sm-12" th:if = "${gender} == 'F'">
+			<h3>The gender is Female</h3>
+		</div> 
+	</div>
+```
+	2.th:switch
+	
+```html
+	<div class = "row">
+		<div class = "col-sm-12" th:switch = "${grade}">
+			<h3 th:case = "1">The first grade</h3>
+			<h3 th:case = "2">The second grade</h3>
+			<h3 th:case = "3">The third grade</h3>
+			<h3 th:case = "4">The forth grade</h3>
+		</div> 
+	</div>
+```
+
+- 迭代循环
+
+	th:each
+	
+```html
+	<div class = "col-sm-12">
+		<table>
+			<tr>
+				<th>Name</th>
+				<th>Age</th>
+			</tr>
+			<tr th:each = "user : ${list}">
+				<td th:text = "${user.name}"></td>
+				<td th:text = "${user.age}"></td>
+			</tr>
+		</table>
+	</div> 
+```
+
+- 域对象
+
+```java
+	package com.doosan.sb.controller.view
+	import javax.servlet.http.HttpServletRequest
+	import org.springframework.stereotype.Controller
+	import org.springframework.ui.Model
+	import org.springframework.web.bind.annotation.RequestMapping
+	import com.doosan.sb.beans.Users
+	@Controller
+	class ThymeleafController {
+		@RequestMapping("/thymeleaf/list")
+		def toList(HttpServletRequest request, Map map){
+			def list = []
+			list << new Users("name":"Harry", "age":20)
+			list << new Users("name":"Tom", "age":23)
+			list << new Users("name":"Jack", "age":22)
+			//跳转到list.jsp页面
+			map.put("list", list)					//对应前端th:each
+			map.put("message", "Hello Thymeleaf")	//对应前端th:text
+			map.put("gender", "M")					//对应前端th:if
+			map.put("grade", "3")					//对应前端th:switch...th:case...
+			//request域数据
+			request.setAttribute("requestdata", "Request data.")
+			//session域数据
+			request.getSession().setAttribute("sessiondata", "Sesssion data.")
+			//application域数据
+			request.getSession().getServletContext().setAttribute("applicationdata", "Application data.")
+			//跳转至list.html文件
+			return "view/thymeleaf/list"
+		}
+	}
+```
+
+```html
+	<div class = "row">
+		<div class = "col-sm-12">
+			<h3 th:text = "${#httpServletRequest.getAttribute('requestdata')}">The first grade</h3>
+			<h3 th:text = "${session.sessiondata}">The second grade</h3>
+			<h3 th:text = "${application.applicationdata}">The third grade</h3>
+		</div> 
+	</div>
+```
+
+- 链接语法
+
+```html
+	<a th:href = "@{~/demo1}"></a>
+	<a th:href = "@{~/demo1(id=1,name=Harry)}"></a>
+```

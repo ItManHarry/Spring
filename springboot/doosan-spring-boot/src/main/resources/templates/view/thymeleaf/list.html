@@ -24,6 +24,53 @@
 	                </div>
 				</div> 
 			</div>
+			<hr/>
+			<div class = "row">
+				<div class = "col-sm-12" th:if = "${gender} == 'M'">
+					<h3>The gender is Male</h3>
+				</div> 
+				<div class = "col-sm-12" th:if = "${gender} == 'F'">
+					<h3>The gender is Female</h3>
+				</div> 
+			</div>
+			<hr/>
+			<div class = "row">
+				<div class = "col-sm-12" th:switch = "${grade}">
+					<h3 th:case = "1">The first grade</h3>
+					<h3 th:case = "2">The second grade</h3>
+					<h3 th:case = "3">The third grade</h3>
+					<h3 th:case = "4">The forth grade</h3>
+				</div> 
+			</div>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<table class = "table">
+						<tr>
+							<th>Name</th>
+							<th>Age</th>
+						</tr>
+						<tr th:each = "user : ${list}">
+							<td th:text = "${user.name}"></td>
+							<td th:text = "${user.age}"></td>
+						</tr>
+					</table>
+				</div> 
+			</div>
+			<hr/>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<h3 th:text = "${#httpServletRequest.getAttribute('requestdata')}">The first grade</h3>
+					<h3 th:text = "${session.sessiondata}">The second grade</h3>
+					<h3 th:text = "${application.applicationdata}">The third grade</h3>
+				</div> 
+			</div>
+			<hr/>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<a class = "btn btn-link" th:href = "@{~/demo1}">Link without parameters</a>
+					<a class = "btn btn-link" th:href = "@{~/demo1(id=1,name=Harry)}">Link with parameters</a>
+				</div> 
+			</div>
 		</div>
 		<script>
 			var vm = new Vue({
