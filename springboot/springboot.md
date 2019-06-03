@@ -600,3 +600,38 @@
 	<a th:href = "@{~/demo1}"></a>
 	<a th:href = "@{~/demo1(id=1,name=Harry)}"></a>
 ```
+
+## SpringBoot整合mybatis
+
+- pom.xml增加数据库链接、mybatis启动器
+
+```xml
+	 <!-- 导入mysql -->
+    <dependency>
+       <groupId>mysql</groupId>
+       <artifactId>mysql-connector-java</artifactId>
+    </dependency>
+    <!-- 导入连接池 -->
+    <dependency>
+       <groupId>com.alibaba</groupId>
+       <artifactId>druid</artifactId>
+       <version>1.0.9</version>
+    </dependency>
+    <!-- 集成mybatis启动器 -->
+	<dependency>
+		<groupId>org.mybatis.spring.boot</groupId>
+		<artifactId>mybatis-spring-boot-starter</artifactId>
+		<version>1.1.1</version>
+	</dependency>
+```
+
+- 配置mysql数据源，配置application.properties文件
+
+```
+	spring.datasource.driverClassName=com.mysql.jdbc.Driver
+	spring.datasource.url=jdbc:mysql://localhost:3306/fsdb
+	spring.datasource.username=fs
+	spring.datasource.password=fileShare2017
+	spring.datasource.type=com.alibaba.druid.pool.DruidDataSource	//连接池类型
+	mybatis.type-aliases-package=com.doosan.sb.dao.domain			//实体表扫描包
+```

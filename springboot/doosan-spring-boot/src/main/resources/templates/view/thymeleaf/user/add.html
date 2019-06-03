@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<title>Add User</title>
+		<link rel="shortcut icon" type="image/x-icon" th:href = "@{/images/logoes/way.ico}" media="screen" />
+		<link rel = "stylesheet" th:href = "@{/css/bootstrap.min.css}" media="screen"/>
+		<script type = "text/javascript" th:src = "@{/js/bootstrap.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/js/jquery-1.11.3.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/js/vue.js}" charset="UTF-8"></script>
+	</head>
+	<body>
+		<div class="container-fluid" id = "contentdiv"> 
+			<form th:action = "@{~/system/user/save}" method = "post">
+				<br>
+				<div class = "row">
+					<div class = "col-sm-2">
+		            	<h5>User Name : </h5>
+					</div> 
+					<div class = "col-sm-2">
+		            	<input type="text" name = "usercd" id = "usercd" placeholder = "User Name......" class="form-control input-sm"/>
+					</div>
+					<div class = "col-sm-2">
+		            	<h5>User Code : </h5>
+					</div> 
+					<div class = "col-sm-2">
+		            	<input type="text" name = "usernm" id = "usernm" placeholder = "User Code......" class="form-control input-sm"/>
+					</div> 
+					<div class = "col-sm-2">
+		            	<h5>Role Id : </h5>
+					</div> 
+					<div class = "col-sm-2">
+		            	<input type="text" name = "roleid" id = "roleid" placeholder = "Role Id......" class="form-control input-sm"/>
+					</div> 
+				</div>
+				<br>
+				<div class = "row">
+					<div class = "col-sm-2">
+		            	<h5>Team Id : </h5>
+					</div> 
+					<div class = "col-sm-2">
+		            	<input type="text" name = "teamid" id = "teamid" placeholder = "Team Id......" class="form-control input-sm"/>
+					</div> 
+					<div class = "col-sm-2">
+		            	<h5>Status : </h5>
+					</div> 
+					<div class = "col-sm-2">
+		            	<input type="text" name = "status" id = "status" placeholder = "status......" class="form-control input-sm"/>
+					</div> 
+					<div class = "col-sm-2">
+		            	<h5>BG : </h5>
+					</div> 
+					<div class = "col-sm-2">
+		            	<input type="text" name = "bg" id = "bg" placeholder = "BG......" class="form-control input-sm"/>
+					</div> 
+				</div>
+				<br>
+				<div class = "row">
+					<div class = "col-sm-12">
+						<input type = "submit" class = "btn btn-link" value = "Save">
+					</div> 
+				</div>
+			</form>
+		</div>
+		<script>
+			
+		</script>
+	</body>
+</html>

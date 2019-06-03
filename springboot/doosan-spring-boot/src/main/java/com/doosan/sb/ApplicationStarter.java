@@ -1,5 +1,7 @@
 package com.doosan.sb;
 import javax.servlet.ServletRegistration;
+
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -15,6 +17,7 @@ import com.doosan.sb.servlet.ServletUsage;
  */
 @SpringBootApplication
 //@ServletComponentScan	//SpringBoot扫描@WebServlet注解对应的类
+@MapperScan("com.doosan.sb.dao")
 public class ApplicationStarter {
 	
 	public static void main(String[] args){
