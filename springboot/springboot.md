@@ -624,6 +624,78 @@
 		<version>1.1.1</version>
 	</dependency>
 ```
+- 创建表
+
+```
+	create table sys_user(
+		tid int primary key auto_increment,
+		usercd varchar(20),
+		usernm varchar(20),
+		roleid int,
+		teamid int,
+		status int,
+		bg int
+	);
+```
+
+- 编写表实体（变量名和数据库字段名称保持一致）
+
+```java
+	package com.doosan.sb.dao.domain;
+
+	public class SysUser {
+
+		public int getTid() {
+			return tid;
+		}
+		public void setTid(int tid) {
+			this.tid = tid;
+		}
+		public int getRoleid() {
+			return roleid;
+		}
+		public void setRoleid(int roleid) {
+			this.roleid = roleid;
+		}
+		public int getTeamid() {
+			return teamid;
+		}
+		public void setTeamid(int teamid) {
+			this.teamid = teamid;
+		}
+		public int getStatus() {
+			return status;
+		}
+		public void setStatus(int status) {
+			this.status = status;
+		}
+		public int getBg() {
+			return bg;
+		}
+		public void setBg(int bg) {
+			this.bg = bg;
+		}
+		public String getUsercd() {
+			return usercd;
+		}
+		public void setUsercd(String usercd) {
+			this.usercd = usercd;
+		}
+		public String getUsernm() {
+			return usernm;
+		}
+		public void setUsernm(String usernm) {
+			this.usernm = usernm;
+		}
+		private int tid;
+		private String usercd;
+		private String usernm;
+		private int roleid;
+		private int teamid;
+		private int status;
+		private int bg;
+	}
+```
 
 - 配置mysql数据源，配置application.properties文件
 
@@ -634,4 +706,186 @@
 	spring.datasource.password=fileShare2017
 	spring.datasource.type=com.alibaba.druid.pool.DruidDataSource	//连接池类型
 	mybatis.type-aliases-package=com.doosan.sb.dao.domain			//实体表扫描包
+```
+
+- 编写mybatis接口文件
+
+```java
+	package com.doosan.sb.dao;
+	import com.doosan.sb.dao.domain.SysUser;
+	/**
+	 * 系统用户操作
+	 */
+	public interface SysUserMapper {
+		/**
+		 * 保存用户
+		 * @param user
+		 */
+		void save(SysUser user);
+	}
+```
+
+- 编写mybatis SQL xml文件
+
+```xml
+	<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	<mapper namespace = "com.doosan.sb.dao.SysUserMapper">
+		<!-- 开启二级缓存 -->
+		<!--cache></cache-->
+		<!-- 保存系统用户 -->
+		<insert id="save" parameterType="sysuser">
+			insert into sys_user(
+				usercd,
+				usernm,
+				roleid,
+				teamid,
+				status,
+				bg
+			) values (
+				#{usercd},
+				#{usernm},
+				#{roleid},
+				#{teamid},
+				#{status},
+				#{bg}
+			)
+		</insert>
+	</mapper>
+```
+
+- 编写service层接口
+
+```java
+	package com.doosan.sb.service;
+	import com.doosan.sb.dao.domain.SysUser;
+	public interface SysUserService {
+		void save(SysUser user);
+	}
+```
+
+- 编写service层接口实现类
+
+```java
+	package com.doosan.sb.service.imp;
+	import org.springframework.beans.factory.annotation.Autowired;
+	import org.springframework.stereotype.Service;
+	import org.springframework.transaction.annotation.Transactional;
+	import com.doosan.sb.dao.SysUserMapper;
+	import com.doosan.sb.dao.domain.SysUser;
+	import com.doosan.sb.service.SysUserService;
+	@Service
+	@Transactional
+	public class SysUserServiceImpl implements SysUserService {
+
+		@Override
+		public void save(SysUser user) {
+			sysUserMapper.save(user);
+		}
+		@Autowired
+		private SysUserMapper sysUserMapper;
+	}
+```
+
+- 编写控制层Controller(此处使用的groovy脚本语言编写)
+
+```groovy
+	package com.doosan.sb.controller.user
+	import org.springframework.beans.factory.annotation.Autowired
+	import org.springframework.stereotype.Controller
+	import org.springframework.web.bind.annotation.RequestMapping
+	import com.doosan.sb.dao.domain.SysUser
+	import com.doosan.sb.service.SysUserService
+	@Controller
+	@RequestMapping("/system/user")
+	class SystemUserController {
+		
+		@RequestMapping("/add")
+		def add(SysUser user){
+			return "view/thymeleaf/user/add"
+		}
+		
+		@RequestMapping("/save")
+		def save(SysUser user){
+			sysUserService.save(user)
+			return "view/thymeleaf/user/success"
+		}
+		@Autowired
+		private SysUserService sysUserService;
+	}
+```
+
+- 编写页面（Thymeleaf）
+
+```html
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+			<title>Add User</title>
+			<link rel="shortcut icon" type="image/x-icon" th:href = "@{/images/logoes/way.ico}" media="screen" />
+			<link rel = "stylesheet" th:href = "@{/css/bootstrap.min.css}" media="screen"/>
+			<script type = "text/javascript" th:src = "@{/js/bootstrap.min.js}" charset="UTF-8"></script>
+			<script type = "text/javascript" th:src = "@{/js/jquery-1.11.3.min.js}" charset="UTF-8"></script>
+			<script type = "text/javascript" th:src = "@{/js/vue.js}" charset="UTF-8"></script>
+		</head>
+		<body>
+			<div class="container-fluid" id = "contentdiv"> 
+				<form th:action = "@{~/system/user/save}" method = "post">
+					<br>
+					<div class = "row">
+						<div class = "col-sm-2">
+							<h5>User Name : </h5>
+						</div> 
+						<div class = "col-sm-2">
+							<input type="text" name = "usercd" id = "usercd" placeholder = "User Name......" class="form-control input-sm"/>
+						</div>
+						<div class = "col-sm-2">
+							<h5>User Code : </h5>
+						</div> 
+						<div class = "col-sm-2">
+							<input type="text" name = "usernm" id = "usernm" placeholder = "User Code......" class="form-control input-sm"/>
+						</div> 
+						<div class = "col-sm-2">
+							<h5>Role Id : </h5>
+						</div> 
+						<div class = "col-sm-2">
+							<input type="text" name = "roleid" id = "roleid" placeholder = "Role Id......" class="form-control input-sm"/>
+						</div> 
+					</div>
+					<br>
+					<div class = "row">
+						<div class = "col-sm-2">
+							<h5>Team Id : </h5>
+						</div> 
+						<div class = "col-sm-2">
+							<input type="text" name = "teamid" id = "teamid" placeholder = "Team Id......" class="form-control input-sm"/>
+						</div> 
+						<div class = "col-sm-2">
+							<h5>Status : </h5>
+						</div> 
+						<div class = "col-sm-2">
+							<input type="text" name = "status" id = "status" placeholder = "status......" class="form-control input-sm"/>
+						</div> 
+						<div class = "col-sm-2">
+							<h5>BG : </h5>
+						</div> 
+						<div class = "col-sm-2">
+							<input type="text" name = "bg" id = "bg" placeholder = "BG......" class="form-control input-sm"/>
+						</div> 
+					</div>
+					<br>
+					<div class = "row">
+						<div class = "col-sm-12">
+							<input type = "submit" class = "btn btn-link" value = "Save">
+						</div> 
+					</div>
+				</form>
+			</div>
+			<script>
+				
+			</script>
+		</body>
+	</html>
 ```
