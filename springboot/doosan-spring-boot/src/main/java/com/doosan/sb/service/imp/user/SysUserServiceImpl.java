@@ -1,10 +1,10 @@
-package com.doosan.sb.service.imp;
+package com.doosan.sb.service.imp.user;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.doosan.sb.dao.SysUserMapper;
 import com.doosan.sb.dao.domain.SysUser;
-import com.doosan.sb.service.SysUserService;
+import com.doosan.sb.dao.user.SysUserMapper;
+import com.doosan.sb.service.user.SysUserService;
 @Service
 @Transactional
 public class SysUserServiceImpl implements SysUserService {

@@ -815,7 +815,7 @@
 	}
 ```
 
-- 编写页面（Thymeleaf）
+- 编写添加页面（Thymeleaf）
 
 ```html
 	<!DOCTYPE html>
@@ -831,44 +831,44 @@
 			<script type = "text/javascript" th:src = "@{/js/vue.js}" charset="UTF-8"></script>
 		</head>
 		<body>
-			<div class="container-fluid" id = "contentdiv"> 
+			<div class="container" id = "contentdiv"> 
 				<form th:action = "@{~/system/user/save}" method = "post">
 					<br>
 					<div class = "row">
-						<div class = "col-sm-2">
+						<div class = "col-sm-2 text-right">
 							<h5>User Name : </h5>
 						</div> 
 						<div class = "col-sm-2">
 							<input type="text" name = "usercd" id = "usercd" placeholder = "User Name......" class="form-control input-sm"/>
 						</div>
-						<div class = "col-sm-2">
+						<div class = "col-sm-2 text-right">
 							<h5>User Code : </h5>
 						</div> 
 						<div class = "col-sm-2">
 							<input type="text" name = "usernm" id = "usernm" placeholder = "User Code......" class="form-control input-sm"/>
 						</div> 
-						<div class = "col-sm-2">
+						<div class = "col-sm-2 text-right">
 							<h5>Role Id : </h5>
 						</div> 
 						<div class = "col-sm-2">
-							<input type="text" name = "roleid" id = "roleid" placeholder = "Role Id......" class="form-control input-sm"/>
+							<input type="text" name = "roleid" id = "roleid" value = "1" placeholder = "Role Id......" class="form-control input-sm"/>
 						</div> 
 					</div>
 					<br>
 					<div class = "row">
-						<div class = "col-sm-2">
+						<div class = "col-sm-2 text-right">
 							<h5>Team Id : </h5>
 						</div> 
 						<div class = "col-sm-2">
-							<input type="text" name = "teamid" id = "teamid" placeholder = "Team Id......" class="form-control input-sm"/>
+							<input type="text" name = "teamid" id = "teamid" value = "1" placeholder = "Team Id......" class="form-control input-sm"/>
 						</div> 
-						<div class = "col-sm-2">
+						<div class = "col-sm-2 text-right">
 							<h5>Status : </h5>
 						</div> 
 						<div class = "col-sm-2">
-							<input type="text" name = "status" id = "status" placeholder = "status......" class="form-control input-sm"/>
+							<input type="text" name = "status" id = "status" value = "1" placeholder = "status......" class="form-control input-sm"/>
 						</div> 
-						<div class = "col-sm-2">
+						<div class = "col-sm-2 text-right">
 							<h5>BG : </h5>
 						</div> 
 						<div class = "col-sm-2">
@@ -877,11 +877,42 @@
 					</div>
 					<br>
 					<div class = "row">
-						<div class = "col-sm-12">
-							<input type = "submit" class = "btn btn-link" value = "Save">
+						<div class = "col-sm-2 col-sm-offset-10 text-center">
+							<input type = "submit" class = "btn btn-success" value = "Save">
 						</div> 
 					</div>
 				</form>
+			</div>
+			<script>
+				
+			</script>
+		</body>
+	</html>
+```
+
+- 编写添加成功页面（Thymeleaf）
+
+```html
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+			<title>Add User Successfully</title>
+			<link rel="shortcut icon" type="image/x-icon" th:href = "@{/images/logoes/way.ico}" media="screen" />
+			<link rel = "stylesheet" th:href = "@{/css/bootstrap.min.css}" media="screen"/>
+			<script type = "text/javascript" th:src = "@{/js/bootstrap.min.js}" charset="UTF-8"></script>
+			<script type = "text/javascript" th:src = "@{/js/jquery-1.11.3.min.js}" charset="UTF-8"></script>
+			<script type = "text/javascript" th:src = "@{/js/vue.js}" charset="UTF-8"></script>
+		</head>
+		<body>
+			<div class="container-fluid" id = "contentdiv"> 
+				<div class = "row">
+					<div class = "col-sm-12 text-center">
+						<h2>Add User Successfully!</h2>
+						<a class = "btn btn-primary" th:href = "@{~/system/user/add}">Continue to Add User</a>
+					</div> 
+				</div>
 			</div>
 			<script>
 				

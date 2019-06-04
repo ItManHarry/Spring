@@ -3,7 +3,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.RequestMapping
 import com.doosan.sb.dao.domain.SysUser
-import com.doosan.sb.service.SysUserService
+import com.doosan.sb.service.user.SysUserService
 @Controller
 @RequestMapping("/system/user")
 class SystemUserController {

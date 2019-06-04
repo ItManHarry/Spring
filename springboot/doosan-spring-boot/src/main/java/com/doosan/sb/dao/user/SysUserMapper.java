@@ -1,4 +1,4 @@
-package com.doosan.sb.dao;
+package com.doosan.sb.dao.user;
 import com.doosan.sb.dao.domain.SysUser;
 /**
  * 系统用户操作
