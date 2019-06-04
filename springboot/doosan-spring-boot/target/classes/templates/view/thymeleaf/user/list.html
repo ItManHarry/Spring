@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<title>System User List</title>
+		<link rel="shortcut icon" type="image/x-icon" th:href = "@{/images/logoes/way.ico}" media="screen" />
+		<link rel = "stylesheet" th:href = "@{/css/bootstrap.min.css}" media="screen"/>
+		<script type = "text/javascript" th:src = "@{/js/bootstrap.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/js/jquery-1.11.3.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/js/vue.js}" charset="UTF-8"></script>
+	</head>
+	<body>
+		<div class="container" id = "contentdiv">
+			<br> 
+			<div class = "row">
+				<div class = "col-sm-12 text-right">
+					<a class = "btn btn-primary" th:href = "@{~/system/user/add}">Add User</a>
+				</div>
+			</div><br>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<table class = "table">
+						<tr>
+							<th>TID</th>
+							<th>Name</th>
+							<th>Code</th>
+							<th>Role</th>
+							<th>Team</th>
+							<th>Status</th>
+							<th>Bg</th>
+							<th>Action</th>
+						</tr>
+						<tr th:each = "user : ${list}">
+							<td th:text = "${user.tid}"></td>
+							<td th:text = "${user.usercd}"></td>
+							<td th:text = "${user.usernm}"></td>
+							<td th:text = "${user.roleid}"></td>
+							<td th:text = "${user.teamid}"></td>
+							<td th:text = "${user.status}"></td>
+							<td th:text = "${user.bg}"></td>
+							<td>
+								<a class = "btn btn-link" th:href = "@{~/system/user/modify(tid=${user.tid})}">Modify</a>
+								<a class = "btn btn-link" th:href = "@{~/system/user/delete(tid=${user.tid})}">Delete</a>
+							</td>
+						</tr>
+					</table>
+				</div> 
+			</div>
+		</div>
+		<script>
+			
+		</script>
+	</body>
+</html>

@@ -21,4 +21,23 @@
 			#{bg}
 		)
 	</insert>
+	<select id="all" resultType="sysuser">
+		select * from sys_user
+	</select>
+	<select id="getUserById" parameterType = "int" resultType="sysuser">
+		select * from sys_user where tid = #{tid}
+	</select>
+	<update id="update" parameterType="sysuser">
+		update sys_user set 
+			usercd = #{usercd}, 
+			usernm = #{usernm}, 
+			roleid = #{roleid}, 
+			teamid = #{teamid}, 
+			status = #{status}, 
+			bg = #{bg} 
+		where tid = #{tid}
+	</update>
+	<delete id="delete" parameterType="int">
+		delete from sys_user where tid = #{tid}
+	</delete>
 </mapper>
