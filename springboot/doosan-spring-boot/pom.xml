@@ -106,6 +106,18 @@
 		    <artifactId>gmaven-plugin</artifactId>
 		    <version>1.0</version>
 		</plugin>
+		<!-- 安装SpringLoader插件 -->
+    	<plugin>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-maven-plugin</artifactId>
+		    <dependencies>
+		    	<dependency>
+		    		<groupId>org.springframework</groupId>
+		    		<artifactId>springloaded</artifactId>
+		    		<version>1.2.5.RELEASE</version>
+		    	</dependency>
+		    </dependencies>
+		</plugin>
     </plugins>
   </build>
 </project>

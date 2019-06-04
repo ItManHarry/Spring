@@ -33,6 +33,7 @@ class SystemUserController {
 	 */
 	@RequestMapping("/list")
 	def list(Map map){
+		println "Go to the user list page 333 ..."
 		def list = sysUserService.all()
 		map.put("list", list)
 		return "view/thymeleaf/user/list"
