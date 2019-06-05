@@ -86,3 +86,143 @@
 		2.4.配置完成后点击"run",  运行项目		
 	
 - 方式二：devtools
+
+	1.1.导入devtools
+	
+```xml
+	<!-- 导入devtools包 -->
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+    	<artifactId>spring-boot-devtools</artifactId>
+		<optional>true</optional>
+		<scope>true</scope>
+	</dependency>
+```
+
+	1.2.启动程序即可，修改后台文件，项目会自动重启
+	
+## SpringBoot异常处理
+
+- 自定义error页面
+
+	SpringBoot已经默认提供了一套错误机制：把所有的后台错误发送到error请求，然后跳到了对应的error页面。
+	自定义error页面：在templates下新建error.html文件即可
+	
+	注：该方式最为简单，但是不利于具体异常问题的排查
+
+- @ExceptionHandler注解提供方法
+
+	在控制层中编写异常处理代码：
+	
+```groovy
+	@ExceptionHandler(value=[java.lang.ArithmeticException])
+	ModelAndView handlerArithmeticException(Exception e){
+		ModelAndView mv = new ModelAndView()
+		mv.addObject("exception", e.toString())
+		mv.setViewName("view/thymeleaf/user/arithmeticError")
+		return mv
+	}
+	@ExceptionHandler(value=[java.lang.NullPointerException])
+	ModelAndView handlerNullPointerException(Exception e){
+		ModelAndView mv = new ModelAndView()
+		mv.addObject("exception", e.toString())
+		mv.setViewName("view/thymeleaf/user/nullPointerError")
+		return mv
+	}
+```
+
+	注：该方式可以捕获具体的异常，跳到具体的error页面，但是不是太通用
+
+- @ControllerAdvice + @ExceptionHandler
+
+	1.1.定义全局的Controller来处理异常
+	
+```groovy
+	package com.doosan.sb.controller.exception
+	import org.springframework.web.bind.annotation.ControllerAdvice
+	import org.springframework.web.bind.annotation.ExceptionHandler
+	import org.springframework.web.servlet.ModelAndView
+	@ControllerAdvice
+	class GlobalExceptionHandler {
+		
+		@ExceptionHandler(value=[java.lang.ArithmeticException])
+		ModelAndView handlerArithmeticException(Exception e){
+			ModelAndView mv = new ModelAndView()
+			mv.addObject("exception", e.toString())
+			mv.setViewName("view/thymeleaf/user/arithmeticError")
+			return mv
+		}
+		@ExceptionHandler(value=[java.lang.NullPointerException])
+		ModelAndView handlerNullPointerException(Exception e){
+			ModelAndView mv = new ModelAndView()
+			mv.addObject("exception", e.toString())
+			mv.setViewName("view/thymeleaf/user/nullPointerError")
+			return mv
+		}
+	}
+```
+	
+	注：该方式可以捕获所有同类型的异常，推荐使用
+
+
+- 配置SimpleMappingExceptionResolver类
+
+	编写Resolver：
+	
+```groovy
+	package com.doosan.sb.config
+	import org.springframework.context.annotation.Bean
+	import org.springframework.context.annotation.Configuration
+	import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver
+	/**
+	 * 配置全局异常页面跳转
+	 */
+	@Configuration
+	class DoosanSimpleMappingExceptionResolver {
+		
+		@Bean
+		SimpleMappingExceptionResolver getSimpleMappingExceptionResolver(){
+			SimpleMappingExceptionResolver resolver = new SimpleMappingExceptionResolver()
+			Properties mappings = new Properties()
+			/**
+			 * key:异常类型全名
+			 * value:异常跳转页面地址
+			 */
+			mappings.put("java.lang.ArithmeticException", "view/thymeleaf/exception/arithmeticError")
+			mappings.put("java.lang.NullPointerException", "view/thymeleaf/exception/nullPointerError")
+			resolver.setExceptionMappings(mappings)
+			return resolver
+		}	
+	}
+```
+
+	注：该方式在项目启动时即可加载，是方式三的优化方案
+	
+	
+- 自定义HandlerExceptionResolver类
+
+	编写程序实现HandlerExceptionResolver接口：
+
+```groovy
+	package com.doosan.sb.controller.exception
+	import javax.servlet.http.HttpServletRequest
+	import javax.servlet.http.HttpServletResponse
+	import org.springframework.context.annotation.Configuration
+	import org.springframework.web.servlet.HandlerExceptionResolver
+	import org.springframework.web.servlet.ModelAndView
+	@Configuration
+	class GlobalHandlerExceptionResolver implements HandlerExceptionResolver {
+
+		@Override
+		public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object object,
+				Exception e) {
+			ModelAndView mv = new ModelAndView()
+			if(e instanceof ArithmeticException)
+				mv.setViewName("view/thymeleaf/exception/arithmeticError")
+			if(e instanceof NullPointerException)
+				mv.setViewName("view/thymeleaf/exception/nullPointerError")
+			mv.addObject("exception", e.toString())
+			return mv
+		}
+	}
+```

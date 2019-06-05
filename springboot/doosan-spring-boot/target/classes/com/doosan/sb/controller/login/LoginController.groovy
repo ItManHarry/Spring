@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.RestController
 class LoginController {
 	@RequestMapping("/login")
 	def login(){
+		String name = null
+		name.toLowerCase()
 		def result = [:]
 		result.put("username", "20112004")
 		result.put("pwd", "12345678")
