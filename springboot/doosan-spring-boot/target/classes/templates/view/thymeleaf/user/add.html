@@ -20,12 +20,14 @@
 					</div> 
 					<div class = "col-sm-2">
 		            	<input type="text" name = "usercd" id = "usercd" placeholder = "User Name......" class="form-control input-sm"/>
+		            	<span class = "text-danger" th:errors = "${user.usercd}"></span>
 					</div>
 					<div class = "col-sm-2 text-right">
 		            	<h5>User Code : </h5>
 					</div> 
 					<div class = "col-sm-2">
 		            	<input type="text" name = "usernm" id = "usernm" placeholder = "User Code......" class="form-control input-sm"/>
+		            	<span class = "text-danger" th:errors = "${user.usernm}"></span>
 					</div> 
 					<div class = "col-sm-2 text-right">
 		            	<h5>Role Id : </h5>

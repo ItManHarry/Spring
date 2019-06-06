@@ -1,5 +1,7 @@
 package com.doosan.sb.dao.domain;
 
+import org.hibernate.validator.constraints.NotBlank;
+
 public class SysUser {
 
 	public int getTid() {
@@ -45,7 +47,9 @@ public class SysUser {
 		this.usernm = usernm;
 	}
 	private int tid;
+	@NotBlank(message="User code is blank!")
 	private String usercd;
+	@NotBlank(message="User name is blank!")
 	private String usernm;
 	private int roleid;
 	private int teamid;

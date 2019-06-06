@@ -226,3 +226,98 @@
 		}
 	}
 ```
+
+## SpringBoot表单验证
+
+- 原理：使用的是hibernate-validate注解实现验证
+
+- 编写代码:form表单字段对应的类
+
+```java
+	package com.doosan.sb.dao.domain;
+	import org.hibernate.validator.constraints.NotBlank;
+	public class SysUser {
+
+		public int getTid() {
+			return tid;
+		}
+		public void setTid(int tid) {
+			this.tid = tid;
+		}
+		public int getRoleid() {
+			return roleid;
+		}
+		public void setRoleid(int roleid) {
+			this.roleid = roleid;
+		}
+		public int getTeamid() {
+			return teamid;
+		}
+		public void setTeamid(int teamid) {
+			this.teamid = teamid;
+		}
+		public int getStatus() {
+			return status;
+		}
+		public void setStatus(int status) {
+			this.status = status;
+		}
+		public int getBg() {
+			return bg;
+		}
+		public void setBg(int bg) {
+			this.bg = bg;
+		}
+		public String getUsercd() {
+			return usercd;
+		}
+		public void setUsercd(String usercd) {
+			this.usercd = usercd;
+		}
+		public String getUsernm() {
+			return usernm;
+		}
+		public void setUsernm(String usernm) {
+			this.usernm = usernm;
+		}
+		private int tid;
+		@NotBlank(message="User code should not be blank!")
+		private String usercd;
+		@NotBlank(message="User name should not be blank!")
+		private String usernm;
+		private int roleid;
+		private int teamid;
+		private int status;
+		private int bg;
+	}
+```
+
+- 编写控制层代码
+
+```groovy
+	@RequestMapping("/save")
+	def save(@Valid @ModelAttribute("user") SysUser user, BindingResult result, Map map){
+		if(result.hasErrors()){
+			println "The validation is not passed, user name or code is empty..."
+			return add(user, map)
+		}
+		sysUserService.save(user)
+		return "view/thymeleaf/user/success"
+	}
+```
+
+- 前端页面修改
+
+```html
+	<div class = "col-sm-2">
+		<input type="text" name = "usercd" id = "usercd" placeholder = "User Name......" class="form-control input-sm"/>
+		<span class = "text-danger" th:errors = "${user.usercd}"></span>
+	</div>
+	<div class = "col-sm-2 text-right">
+		<h5>User Code : </h5>
+	</div> 
+	<div class = "col-sm-2">
+		<input type="text" name = "usernm" id = "usernm" placeholder = "User Code......" class="form-control input-sm"/>
+		<span class = "text-danger" th:errors = "${user.usernm}"></span>
+	</div> 
+```

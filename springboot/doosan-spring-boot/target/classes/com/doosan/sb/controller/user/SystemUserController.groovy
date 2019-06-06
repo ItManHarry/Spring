@@ -1,7 +1,10 @@
 package com.doosan.sb.controller.user
+import javax.validation.Valid
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
+import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.servlet.ModelAndView
 import com.doosan.sb.dao.domain.SysUser
@@ -15,7 +18,8 @@ class SystemUserController {
 	 * @return
 	 */
 	@RequestMapping("/add")
-	def add(SysUser user){
+	def add(SysUser user, Map map){
+		map.put("user", user)
 		return "view/thymeleaf/user/add"
 	}
 	/**
@@ -24,7 +28,11 @@ class SystemUserController {
 	 * @return
 	 */
 	@RequestMapping("/save")
-	def save(SysUser user){
+	def save(@Valid @ModelAttribute("user") SysUser user, BindingResult result, Map map){
+		if(result.hasErrors()){
+			println "The validation is not passed, user name or code is empty..."
+			return add(user, map)
+		}
 		sysUserService.save(user)
 		return "view/thymeleaf/user/success"
 	}
