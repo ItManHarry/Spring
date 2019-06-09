@@ -321,3 +321,169 @@
 		<span class = "text-danger" th:errors = "${user.usernm}"></span>
 	</div> 
 ```
+
+- 常用的验证注解
+
+	1.@NotBlank：是否为空，自动去掉两边的空格
+	
+	2.@NotEmpty：是否为空，不会自动去掉两边的空格
+	
+	3.@Length：判断长度
+	
+	4.@Min：最小值
+	
+	5.@Max：最大值
+	
+	6.@Email：判断邮箱格式
+
+## Spring JPA整合
+
+- 配置pom.xml文件，导入JPA启动器及数据库连接驱动和连接池
+
+```xml
+	 <!-- 导入mysql -->
+    <dependency>
+       <groupId>mysql</groupId>
+       <artifactId>mysql-connector-java</artifactId>
+    </dependency>
+    <!-- 导入连接池 -->
+    <dependency>
+       <groupId>com.alibaba</groupId>
+       <artifactId>druid</artifactId>
+       <version>1.0.9</version>
+    </dependency>
+    <!-- spring jpa -->
+  	<dependency>
+  		<groupId>org.springframework.boot</groupId>
+    	<artifactId>spring-boot-starter-data-jpa</artifactId>
+  	</dependency>
+```
+ - 配置数据库信息，在resources下配置application.properties文件
+ 
+ ```
+	spring.datasource.driverClassName=com.mysql.jdbc.Driver
+	spring.datasource.url=jdbc:mysql://localhost:3306/fsdb
+	spring.datasource.username=fs
+	spring.datasource.password=fileShare2017
+	spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
+	mybatis.type-aliases-package=com.doosan.sb.dao.domain
+	spring.jpa.hibernate.ddl-auto=update
+	spring.jpa.show-sql=true
+ ```
+ 
+ - 创建实体表
+ 
+ ```java
+	package com.doosan.sb.dao.domain;
+	import javax.persistence.Column;
+	import javax.persistence.Entity;
+	import javax.persistence.GeneratedValue;
+	import javax.persistence.GenerationType;
+	import javax.persistence.Id;
+	import javax.persistence.Table;
+	/**
+	 * 雇员表实体
+	 */
+	@Entity
+	@Table(name="tb_employee")
+	public class Tb_Employee {	
+		@Id
+		@GeneratedValue(strategy=GenerationType.AUTO)
+		@Column(name="tid")
+		private Integer tid;
+		@Column(name="name")
+		private String name;
+		@Column(name="age")
+		private Integer age;
+		@Column(name="address")
+		private String address;
+		@Column(name="gender")
+		private String gender;
+		@Column(name="telphone")	
+		private String telphone;
+		
+		public Integer getTid() {
+			return tid;
+		}
+		public void setTid(Integer tid) {
+			this.tid = tid;
+		}
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		public Integer getAge() {
+			return age;
+		}
+		public void setAge(Integer age) {
+			this.age = age;
+		}
+		public String getAddress() {
+			return address;
+		}
+		public void setAddress(String address) {
+			this.address = address;
+		}
+		public String getGender() {
+			return gender;
+		}
+		public void setGender(String gender) {
+			this.gender = gender;
+		}
+		public String getTelphone() {
+			return telphone;
+		}
+		public void setTelphone(String telphone) {
+			this.telphone = telphone;
+		}
+	}
+ ```
+ 
+ - 编写DAO接口(继承JpaRepository接口)
+ 
+ ```java
+	package com.doosan.sb.dao.employee;
+	import org.springframework.data.jpa.repository.JpaRepository;
+	import com.doosan.sb.dao.domain.Tb_Employee;
+	/**
+	 * 参数一：映射的实体
+	 * 参数二：实体对应的主键(ID)的类型
+	 */
+	public interface EmployeRepository extends JpaRepository<Tb_Employee, Integer> {
+
+	}
+ ```
+ 
+ - 编程单元测试
+ 
+ ```java
+	package com.doosan.sb.test;
+	import org.junit.Test;
+	import org.junit.runner.RunWith;
+	import org.springframework.beans.factory.annotation.Autowired;
+	import org.springframework.boot.test.context.SpringBootTest;
+	import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+	import com.doosan.sb.ApplicationStarter;
+	import com.doosan.sb.dao.domain.Tb_Employee;
+	import com.doosan.sb.dao.employee.EmployeRepository;
+	@RunWith(SpringJUnit4ClassRunner.class)				//Junit和spring环境进行整合
+	@SpringBootTest(classes={ApplicationStarter.class})	//SpringBoot测试类，加载springboot启动类
+	public class EmployeeDaoUnitTest {
+		
+		@Test
+		public void testSave(){
+			Tb_Employee employee = new Tb_Employee();
+			employee.setAddress("Test Employee address");
+			employee.setAge(36);
+			employee.setGender("M");
+			employee.setName("Harry");
+			employee.setTelphone("13780924007");
+			employeRepository.save(employee);
+		}
+		
+		@Autowired
+		private EmployeRepository employeRepository;
+	}	
+ ```

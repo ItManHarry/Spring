@@ -33,7 +33,8 @@
 		            	<h5>Role Id : </h5>
 					</div> 
 					<div class = "col-sm-2">
-		            	<input type="text" name = "roleid" id = "roleid" value = "1" placeholder = "Role Id......" class="form-control input-sm"/>
+		            	<input type="text" name = "roleid" id = "roleid" value = "0" placeholder = "Role Id......" class="form-control input-sm"/>
+						<span class = "text-danger" th:errors = "${user.roleid}"></span>
 					</div> 
 				</div>
 				<br>
