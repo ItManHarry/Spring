@@ -1,5 +1,7 @@
 package com.doosan.sb.dao.employee;
 import java.util.List;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import com.doosan.sb.dao.domain.Tb_Employee;
 
@@ -10,4 +12,14 @@ public interface EmployeeQueryRepository extends Repository<Tb_Employee, Integer
 	List<Tb_Employee> findByNameAndGender(String name, String gender);
 	//模糊查询
 	List<Tb_Employee> findByTelphoneLike(String telphone);
+	
+	//使用@Query注解HQL查询
+	@Query("from Tb_Employee where name = ?")
+	List<Tb_Employee> queryByNameHQL(String name);
+	//使用@Query注解SQL查询
+	@Query(value="select * from Tb_Employee where name = ?",nativeQuery=true)
+	List<Tb_Employee> queryByNameSQL(String name);
+	@Query("update Tb_Employee set address = ? where tid = ?")
+	@Modifying	//执行更新时,必须增加此注解
+	void updateEmployeeById(String address, int id);
 }

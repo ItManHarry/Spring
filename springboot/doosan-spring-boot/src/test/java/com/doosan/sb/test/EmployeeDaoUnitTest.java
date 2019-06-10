@@ -1,11 +1,12 @@
 package com.doosan.sb.test;
 import java.util.List;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 import com.doosan.sb.ApplicationStarter;
 import com.doosan.sb.dao.domain.Tb_Employee;
 import com.doosan.sb.dao.employee.EmployeRepository;
@@ -37,8 +38,10 @@ public class EmployeeDaoUnitTest {
 		}
 	}
 	@Test
+	@Transactional	//启用事务操作;@Transactional和@Test一起使用的时候,事务会自动回滚
+	@Rollback(false)//禁止事务自动回滚
 	public void testUpdate(){
-		
+		employeeQueryRepository.updateEmployeeById("changing the address", 5);
 	}
 	
 	@Test
@@ -51,6 +54,16 @@ public class EmployeeDaoUnitTest {
 	@Test
 	public void testFindByName(){
 		List<Tb_Employee> employees = employeeQueryRepository.findByName("Harry");
+		for(Tb_Employee e : employees){
+			System.out.println("Employee address : " + e.getAddress());
+		}
+		System.out.println("---------------Now query using @Query:HQL---------------");
+		employees = employeeQueryRepository.queryByNameHQL("Tom");
+		for(Tb_Employee e : employees){
+			System.out.println("Employee address : " + e.getAddress());
+		}
+		System.out.println("---------------Now query using @Query:SQL---------------");
+		employees = employeeQueryRepository.queryByNameSQL("Cheng");
 		for(Tb_Employee e : employees){
 			System.out.println("Employee address : " + e.getAddress());
 		}
