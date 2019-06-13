@@ -1087,5 +1087,315 @@
 
 - JpaRepository
 
-- JPASpecificationExecutor
+	接口继承于PagingAndSortingRepository,适配之前接口的方法:findAll返回结果不再需要进行类型强转了。
+	实际开发中，通常继承该接口
+	
+	编写DAO接口:
+	
+```java
+	package com.doosan.sb.dao.employee;
+	import java.util.List;
+	import org.springframework.data.jpa.repository.JpaRepository;
+	import org.springframework.data.jpa.repository.Modifying;
+	import org.springframework.data.jpa.repository.Query;
+	import com.doosan.sb.dao.domain.Tb_Employee;
 
+	public interface EmployeeJpaRepository extends JpaRepository<Tb_Employee, Integer> {
+		//根据名称列进行查询(此处默认是equals,等同于:findByNameQqual)
+		List<Tb_Employee> findByName(String name);
+		//根据姓名和性别查询
+		List<Tb_Employee> findByNameAndGender(String name, String gender);
+		//模糊查询
+		List<Tb_Employee> findByTelphoneLike(String telphone);
+		
+		//使用@Query注解HQL查询
+		@Query("from Tb_Employee where name = ?")
+		List<Tb_Employee> queryByNameHQL(String name);
+		//使用@Query注解SQL查询
+		@Query(value="select * from Tb_Employee where name = ?",nativeQuery=true)
+		List<Tb_Employee> queryByNameSQL(String name);
+		@Query("update Tb_Employee set address = ? where tid = ?")
+		@Modifying	//执行更新时,必须增加此注解
+		void updateEmployeeById(String address, int id);
+	}
+```
+
+	编写单元测试代码：
+	
+```java
+	package com.doosan.sb.test;
+	import java.util.List;
+	import org.junit.Test;
+	import org.junit.runner.RunWith;
+	import org.springframework.beans.factory.annotation.Autowired;
+	import org.springframework.boot.test.context.SpringBootTest;
+	import org.springframework.data.domain.Page;
+	import org.springframework.data.domain.PageRequest;
+	import org.springframework.data.domain.Pageable;
+	import org.springframework.data.domain.Sort;
+	import org.springframework.data.domain.Sort.Order;
+	import org.springframework.data.domain.Sort.Direction;
+	import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+	import com.doosan.sb.ApplicationStarter;
+	import com.doosan.sb.dao.domain.Tb_Employee;
+	import com.doosan.sb.dao.employee.EmployeeJpaRepository;
+	@RunWith(SpringJUnit4ClassRunner.class)				//Junit和spring环境进行整合
+	@SpringBootTest(classes={ApplicationStarter.class})	//SpringBoot测试类，加载springboot启动类
+	public class EmployeeDaoJpaTest {
+		@Autowired
+		private EmployeeJpaRepository employeeJpaRepository;
+		
+		//测试排序
+		@Test
+		public void testSorting(){
+			//封装排序条件的对象
+			Sort sort = new Sort(new Order(Direction.DESC, "tid"));
+			List<Tb_Employee> employees = (List<Tb_Employee>)employeeJpaRepository.findAll(sort);
+			for(Tb_Employee e : employees){
+				System.out.println("Employee id is : " + e.getTid());
+				System.out.println("Employee name is : " + e.getName());
+				System.out.println("Employee age is : " + e.getAge());
+				System.out.println("Employee address is : " + e.getAddress());
+				System.out.println("-------------------------------------------");
+			}
+		}
+		
+		//测试分页
+		@Test
+		public void testPaging(){
+			//封装排序条件的对象
+			Sort sort = new Sort(new Order(Direction.DESC, "tid"));
+			//分页参数封装：第一个参数：页数，第二个参数：每页条数，第三个：排序(可不用)
+			Pageable pageable = new PageRequest(0, 5, sort);
+			//Page用于封装查询后的结果
+			Page<Tb_Employee> pageData = employeeJpaRepository.findAll(pageable);
+			//总记录数
+			System.out.println("Total elements : " + pageData.getTotalElements());
+			System.out.println("Total pages : " + pageData.getTotalPages());
+			//获取结果集
+			List<Tb_Employee> employees = pageData.getContent();
+			for(Tb_Employee e : employees){
+				System.out.println("Employee id is : " + e.getTid());
+				System.out.println("Employee name is : " + e.getName());
+				System.out.println("Employee age is : " + e.getAge());
+				System.out.println("Employee address is : " + e.getAddress());
+				System.out.println("-------------------------------------------");
+			}
+		}
+		
+		//测试保存
+		@Test
+		public void testSave(){
+			Tb_Employee employee = new Tb_Employee();
+			employee.setAddress("ShanDong UUU");
+			employee.setAge(23);
+			employee.setGender("M");
+			employee.setName("UUU");
+			employee.setTelphone("15867876753");
+			employeeJpaRepository.save(employee);
+		}
+		//测试修改
+		@Test
+		public void testModify(){
+			Tb_Employee employee = new Tb_Employee();
+			//执行更新也是调用接口的save方法,此处设置ID,接口即可自动识别是更新还是新增
+			employee.setTid(10);
+			employee.setAddress("ShanDong JJJJ");
+			employee.setAge(25);
+			employee.setGender("F");
+			employee.setName("JJJJ");
+			employee.setTelphone("13589790908");
+			employeeJpaRepository.save(employee);
+		}
+		//测试查询
+		@Test
+		public void testQuery(){
+			long sum = employeeJpaRepository.count();
+			System.out.println("Recorde size is : " + sum);
+			//继承JpaRepository不再需要类型强转
+			List<Tb_Employee> all = employeeJpaRepository.findAll();
+			for(Tb_Employee e : all){
+				System.out.println("Employee name is : " + e.getName());
+				System.out.println("Employee age is : " + e.getAge());
+				System.out.println("Employee address is : " + e.getAddress());
+				System.out.println("-------------------------------------------");
+			}
+		}
+		//测试查询单条数据
+		@Test
+		public void testQueryOne(){
+			Tb_Employee employee = employeeJpaRepository.findOne(13);
+			System.out.println("Employee has been found, employee name is : " + employee.getName());
+		}
+		//测试删除
+		@Test
+		public void testDelete(){
+			employeeJpaRepository.delete(12);
+			System.out.println("The item has been deleted...");
+		}
+		@Test
+		public void testFindByName(){
+			List<Tb_Employee> employees = employeeJpaRepository.findByName("Harry");
+			for(Tb_Employee e : employees){
+				System.out.println("Employee address : " + e.getAddress());
+			}
+			System.out.println("---------------Now query using @Query:HQL---------------");
+			employees = employeeJpaRepository.queryByNameHQL("Tom");
+			for(Tb_Employee e : employees){
+				System.out.println("Employee address : " + e.getAddress());
+			}
+			System.out.println("---------------Now query using @Query:SQL---------------");
+			employees = employeeJpaRepository.queryByNameSQL("Cheng");
+			for(Tb_Employee e : employees){
+				System.out.println("Employee address : " + e.getAddress());
+			}
+		}
+		@Test
+		public void testFindByNameAndGender(){
+			List<Tb_Employee> employees = employeeJpaRepository.findByNameAndGender("Harry", "F");
+			if(employees.size() != 0)
+				for(Tb_Employee e : employees){
+					System.out.println("Employee address : " + e.getAddress());
+				}
+			else
+				System.out.println("No data finded...");
+		}
+		@Test
+		/**
+		 * 查询需要加上查询关键词
+		 * %:匹配多个字符
+		 * _:匹配单个字符
+		 */
+		public void testFindByTelphoneLike(){
+			List<Tb_Employee> employees = employeeJpaRepository.findByTelphoneLike("%158%");
+			if(employees.size() != 0)
+				for(Tb_Employee e : employees){
+					System.out.println("Employee address : " + e.getAddress());
+				}
+			else
+				System.out.println("No data finded...");
+		}
+	}
+```	
+
+- JpaSpecificationExecutor
+
+	作用：用于(组合)条件查询，例如：条件+分页
+	该接口是独立接口，顾实际开发中进行多个继承，即：继承JpaRepository + JpaSpecificationExecutor，以实现最强大的功能。
+
+```java
+	public interface EmployeeDao extends JpaRepository<Tb_Employee, Integer>, JpaSpecificationExecutor<Tb_Employee> {
+		...
+	}
+```
+
+	编写DAO接口：
+	
+```java
+	package com.doosan.sb.dao.employee;
+	import java.util.List;
+	import org.springframework.data.jpa.repository.JpaRepository;
+	import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+	import org.springframework.data.jpa.repository.Modifying;
+	import org.springframework.data.jpa.repository.Query;
+	import com.doosan.sb.dao.domain.Tb_Employee;
+
+	public interface EmployeeDao extends JpaRepository<Tb_Employee, Integer>, JpaSpecificationExecutor<Tb_Employee> {
+		//根据名称列进行查询(此处默认是equals,等同于:findByNameQqual)
+		List<Tb_Employee> findByName(String name);
+		//根据姓名和性别查询
+		List<Tb_Employee> findByNameAndGender(String name, String gender);
+		//模糊查询
+		List<Tb_Employee> findByTelphoneLike(String telphone);	
+		//使用@Query注解HQL查询
+		@Query("from Tb_Employee where name = ?")
+		List<Tb_Employee> queryByNameHQL(String name);
+		//使用@Query注解SQL查询
+		@Query(value="select * from Tb_Employee where name = ?",nativeQuery=true)
+		List<Tb_Employee> queryByNameSQL(String name);
+		@Query("update Tb_Employee set address = ? where tid = ?")
+		@Modifying	//执行更新时,必须增加此注解
+		void updateEmployeeById(String address, int id);
+	}	
+```
+
+	编写单元测试代码：
+
+```java
+	package com.doosan.sb.test;
+	import java.util.ArrayList;
+	import java.util.List;
+	import javax.persistence.criteria.CriteriaBuilder;
+	import javax.persistence.criteria.CriteriaQuery;
+	import javax.persistence.criteria.Predicate;
+	import javax.persistence.criteria.Root;
+	import org.junit.Test;
+	import org.junit.runner.RunWith;
+	import org.springframework.beans.factory.annotation.Autowired;
+	import org.springframework.boot.test.context.SpringBootTest;
+	import org.springframework.data.jpa.domain.Specification;
+	import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+	import com.doosan.sb.ApplicationStarter;
+	import com.doosan.sb.dao.domain.Tb_Employee;
+	import com.doosan.sb.dao.employee.EmployeeDao;
+	@RunWith(SpringJUnit4ClassRunner.class)				//Junit和spring环境进行整合
+	@SpringBootTest(classes={ApplicationStarter.class})	//SpringBoot测试类，加载springboot启动类
+	public class EmployeeDaoFinalTest {
+		@Autowired
+		private EmployeeDao employeeDao;
+		
+		//单条件查询
+		@Test
+		public void testQuery(){
+			//Predicate:该对象用于封装条件
+			Specification<Tb_Employee> spec = new Specification<Tb_Employee>(){
+				/**
+				 * Root<Tb_Employee>:根对象，用于查询对象的属性
+				 *  CriteriaQuery<?>:执行普通查询
+				 *  CriteriaBuilder:查询条件构造器,用于完成不同条件的查询
+				 *  
+				 */
+				public Predicate toPredicate(Root<Tb_Employee> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+					/**
+					 * 第一个参数:查询的属性(需要用root进行查询)
+					 * 第二参数:条件值
+					 * 以下等同于"from Tb_Employee where name = ?"
+					 */
+					Predicate predicate = builder.equal(root.get("name"), "Harry");
+					return predicate;
+				}
+			};	
+			
+			List<Tb_Employee> list = employeeDao.findAll(spec);
+			for(Tb_Employee e : list){
+				System.out.println("Employee name : " + e.getName() + " age : " + e.getAge());
+			}
+		}
+		//多条件查询
+		@Test
+		public void testMultiQuery(){
+			//Predicate:该对象用于封装条件
+			Specification<Tb_Employee> spec = new Specification<Tb_Employee>(){
+				/**
+				 * Root<Tb_Employee>:根对象，用于查询对象的属性
+				 *  CriteriaQuery<?>:执行普通查询
+				 *  CriteriaBuilder:查询条件构造器,用于完成不同条件的查询
+				 *  
+				 */
+				public Predicate toPredicate(Root<Tb_Employee> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+					// where name = ? and gender = ?
+					List<Predicate> predicates = new ArrayList<Predicate>();
+					predicates.add(builder.equal(root.get("name"), "Harry"));
+					predicates.add(builder.equal(root.get("gender"), "M"));
+					Predicate[] predicateArray = new Predicate[predicates.size()];
+					return builder.and(predicates.toArray(predicateArray));
+				}
+			};	
+			
+			List<Tb_Employee> list = employeeDao.findAll(spec);
+			for(Tb_Employee e : list){
+				System.out.println("Employee name : " + e.getName() + " age : " + e.getAge());
+			}
+		}
+	}
+```

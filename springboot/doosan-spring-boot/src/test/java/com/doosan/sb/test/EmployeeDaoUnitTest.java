@@ -14,6 +14,10 @@ import com.doosan.sb.dao.employee.EmployeeQueryRepository;
 @RunWith(SpringJUnit4ClassRunner.class)				//Junit和spring环境进行整合
 @SpringBootTest(classes={ApplicationStarter.class})	//SpringBoot测试类，加载springboot启动类
 public class EmployeeDaoUnitTest {
+	@Autowired
+	private EmployeRepository employeRepository;
+	@Autowired
+	private EmployeeQueryRepository employeeQueryRepository;
 	
 	@Test
 	public void testSave(){
@@ -93,9 +97,4 @@ public class EmployeeDaoUnitTest {
 		else
 			System.out.println("No data finded...");
 	}
-	
-	@Autowired
-	private EmployeRepository employeRepository;
-	@Autowired
-	private EmployeeQueryRepository employeeQueryRepository;
 }
