@@ -1,9 +1,12 @@
 package com.doosan.sb.dao.domain;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 /**
  * 雇员表实体
@@ -25,6 +28,12 @@ public class Tb_Employee {
 	private String gender;
 	@Column(name="telphone")	
 	private String telphone;
+	//多发关联一方,一个雇员属于一个部门
+	//@ManyToOne(cascade=CascadeType.PERSIST)
+	@ManyToOne
+	//维护外键
+	@JoinColumn(name="department")
+	private Tb_Department department;
 	
 	public Integer getTid() {
 		return tid;
@@ -61,5 +70,11 @@ public class Tb_Employee {
 	}
 	public void setTelphone(String telphone) {
 		this.telphone = telphone;
+	}
+	public Tb_Department getDepartment() {
+		return department;
+	}
+	public void setDepartment(Tb_Department department) {
+		this.department = department;
 	}
 }
