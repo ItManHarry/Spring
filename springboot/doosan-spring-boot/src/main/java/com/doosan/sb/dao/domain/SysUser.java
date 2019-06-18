@@ -1,9 +1,11 @@
 package com.doosan.sb.dao.domain;
+import java.io.Serializable;
 import javax.validation.constraints.Min;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 
-public class SysUser {
+public class SysUser implements Serializable{
+	private static final long serialVersionUID = -4616262662539890608L;
 	private int tid;
 	@NotBlank(message="User code is blank!")
 	@Length(min=4,max=8,message="User code length must between 4 and 8!")

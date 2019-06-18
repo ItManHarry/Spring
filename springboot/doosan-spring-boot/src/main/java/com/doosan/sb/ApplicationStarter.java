@@ -1,6 +1,5 @@
 package com.doosan.sb;
 import javax.servlet.ServletRegistration;
-
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -8,6 +7,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import com.doosan.sb.filter.FilterUsage;
 import com.doosan.sb.listener.ListenerUsage;
@@ -17,7 +17,8 @@ import com.doosan.sb.servlet.ServletUsage;
  */
 @SpringBootApplication
 //@ServletComponentScan	//SpringBoot扫描@WebServlet注解对应的类
-@MapperScan("com.doosan.sb.dao")
+@MapperScan("com.doosan.sb.dao")	//MyBtis扫描
+@EnableCaching						//启用缓存
 public class ApplicationStarter {
 	
 	public static void main(String[] args){

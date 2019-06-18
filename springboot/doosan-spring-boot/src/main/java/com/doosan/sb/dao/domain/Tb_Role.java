@@ -1,4 +1,5 @@
 package com.doosan.sb.dao.domain;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.Column;
@@ -14,7 +15,8 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name="tb_role")
-public class Tb_Role {
+public class Tb_Role implements Serializable {
+	private static final long serialVersionUID = -6354767586648228560L;
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	@Column(name="tid")

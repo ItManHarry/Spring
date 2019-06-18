@@ -1399,3 +1399,437 @@
 		}
 	}
 ```
+
+- 一对多
+
+	编写实体表 - 雇员表：
+
+```java
+	package com.doosan.sb.dao.domain;
+	import javax.persistence.CascadeType;
+	import javax.persistence.Column;
+	import javax.persistence.Entity;
+	import javax.persistence.GeneratedValue;
+	import javax.persistence.GenerationType;
+	import javax.persistence.Id;
+	import javax.persistence.JoinColumn;
+	import javax.persistence.ManyToOne;
+	import javax.persistence.Table;
+	/**
+	 * 雇员表实体
+	 */
+	@Entity
+	@Table(name="tb_employee")
+	public class Tb_Employee {	
+		@Id
+		@GeneratedValue(strategy=GenerationType.AUTO)
+		@Column(name="tid")
+		private Integer tid;
+		@Column(name="name")
+		private String name;
+		@Column(name="age")
+		private Integer age;
+		@Column(name="address")
+		private String address;
+		@Column(name="gender")
+		private String gender;
+		@Column(name="telphone")	
+		private String telphone;
+		//多发关联一方,一个雇员属于一个部门
+		//@ManyToOne(cascade=CascadeType.PERSIST)
+		@ManyToOne
+		//维护外键
+		@JoinColumn(name="department")
+		private Tb_Department department;
+		
+		public Integer getTid() {
+			return tid;
+		}
+		public void setTid(Integer tid) {
+			this.tid = tid;
+		}
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		public Integer getAge() {
+			return age;
+		}
+		public void setAge(Integer age) {
+			this.age = age;
+		}
+		public String getAddress() {
+			return address;
+		}
+		public void setAddress(String address) {
+			this.address = address;
+		}
+		public String getGender() {
+			return gender;
+		}
+		public void setGender(String gender) {
+			this.gender = gender;
+		}
+		public String getTelphone() {
+			return telphone;
+		}
+		public void setTelphone(String telphone) {
+			this.telphone = telphone;
+		}
+		public Tb_Department getDepartment() {
+			return department;
+		}
+		public void setDepartment(Tb_Department department) {
+			this.department = department;
+		}
+	}
+```
+
+	编写实体表 - 部门表：
+	
+```java
+	package com.doosan.sb.dao.domain;
+	import java.util.HashSet;
+	import java.util.Set;
+	import javax.persistence.CascadeType;
+	import javax.persistence.Column;
+	import javax.persistence.Entity;
+	import javax.persistence.FetchType;
+	import javax.persistence.GeneratedValue;
+	import javax.persistence.GenerationType;
+	import javax.persistence.Id;
+	import javax.persistence.OneToMany;
+	import javax.persistence.Table;
+	/**
+	 * 部门表实体
+	 */
+	@Entity
+	@Table(name="tb_department")
+	public class Tb_Department {
+		@Id
+		@GeneratedValue(strategy=GenerationType.AUTO)
+		@Column(name="tid")
+		private Integer tid;
+		@Column(name="name")
+		private String name;
+		//一方关联多发,一个部门有多个雇员
+		//如果不配置fetch属性时,fetch属性值默认为lazy,执行查询部门获取雇员信息会报异常:
+		/**
+		 * org.hibernate.LazyInitializationException: failed to lazily initialize a collection of role: 
+		 * com.doosan.sb.dao.domain.Tb_Department.employees, could not initialize proxy - no Session
+		 * ...
+		 */
+		@OneToMany(mappedBy="department",fetch=FetchType.EAGER)
+		private Set<Tb_Employee> employees = new HashSet<Tb_Employee>();
+		
+		public Integer getTid() {
+			return tid;
+		}
+		public void setTid(Integer tid) {
+			this.tid = tid;
+		}
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		public Set<Tb_Employee> getEmployees() {
+			return employees;
+		}
+		public void setEmployees(Set<Tb_Employee> employees) {
+			this.employees = employees;
+		}	
+	}
+```
+
+	编写单元测试代码：
+	
+```java
+	package com.doosan.sb.test;
+	import java.util.HashSet;
+	import java.util.Iterator;
+	import java.util.Set;
+	import org.junit.Test;
+	import org.junit.runner.RunWith;
+	import org.springframework.beans.factory.annotation.Autowired;
+	import org.springframework.boot.test.context.SpringBootTest;
+	import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+	import com.doosan.sb.ApplicationStarter;
+	import com.doosan.sb.dao.department.DepartmentDao;
+	import com.doosan.sb.dao.domain.Tb_Department;
+	import com.doosan.sb.dao.domain.Tb_Employee;
+	import com.doosan.sb.dao.employee.EmployeeDao;
+	@RunWith(SpringJUnit4ClassRunner.class)				//Junit和spring环境进行整合
+	@SpringBootTest(classes={ApplicationStarter.class})	//SpringBoot测试类，加载springboot启动类
+	public class OneToManyTest {
+
+		@Autowired
+		private EmployeeDao employeeDao;
+		@Autowired
+		private DepartmentDao departmentDao;
+		
+		@Test
+		public void testSave(){
+			//save department
+			Tb_Department department = new Tb_Department();
+			department.setName("Department One");		
+			//create a employee
+			Tb_Employee employee = new Tb_Employee();
+			employee.setName("XiaoHong");		
+			//join department and employee
+			employee.setDepartment(department);
+			department.getEmployees().add(employee);
+			employeeDao.save(employee);
+		}
+		
+		@Test
+		public void testQuery(){
+			Tb_Employee employee = employeeDao.findOne(15);
+			Tb_Department department = employee.getDepartment();
+			System.out.println("Employee name is : " + employee.getName() + " , and department name is : " + department.getName());
+		}
+		
+		@Test
+		public void testSaveDepartment(){
+	//		Tb_Department department = new Tb_Department();
+	//		department.setName("Department Three");
+	//		departmentDao.save(department);
+			Tb_Employee employee = employeeDao.findOne(11);
+			employee.setName("EM-I");
+	//		employee.setDepartment(departmentDao.findOne(1));
+			employee.setAddress("ShanDong I");
+			employee.setAge(26);
+			employee.setGender("F");
+			employee.setTelphone("13767568909");
+			employeeDao.save(employee);
+		}
+		@Test
+		public void testQueryDepartment(){
+			Tb_Department department = departmentDao.findOne(1);
+			Iterator<Tb_Employee> it = department.getEmployees().iterator();
+			while(it.hasNext()){
+				Tb_Employee employee = it.next();
+				System.out.println("Employee Id : " + employee.getTid() + ", and name is : " + employee.getName());
+			}
+		}
+		@Test
+		public void testSaveDepartmentEmployees(){
+			Tb_Department department = new Tb_Department();
+			department.setName("Department Seven");
+	//		Set<Tb_Employee> employees = new HashSet<Tb_Employee>();
+	//		employees.add(employeeDao.findOne(1));
+	//		employees.add(employeeDao.findOne(7));
+	//		employees.add(employeeDao.findOne(16));
+	//		department.setEmployees(employees);
+			departmentDao.save(department);
+			Tb_Employee employee = employeeDao.findOne(1);
+			employee.setDepartment(department);
+			employeeDao.save(employee);
+		}
+	} 
+```
+
+- 多对多
+
+	编写实体表 - 用户表
+	
+```java
+	package com.doosan.sb.dao.domain;
+	import java.util.HashSet;
+	import java.util.Set;
+	import javax.persistence.Column;
+	import javax.persistence.Entity;
+	import javax.persistence.FetchType;
+	import javax.persistence.GeneratedValue;
+	import javax.persistence.GenerationType;
+	import javax.persistence.Id;
+	import javax.persistence.JoinColumn;
+	import javax.persistence.JoinTable;
+	import javax.persistence.ManyToMany;
+	import javax.persistence.Table;
+	@Entity
+	@Table(name="tb_user")
+	public class Tb_User {
+		@Id
+		@GeneratedValue(strategy=GenerationType.AUTO)
+		@Column(name="tid")
+		private Integer tid;
+		@Column(name="name")
+		private String name;
+		@Column(name="password")
+		private String password;
+		//多对多,一个用户对应多个角色
+		//@ManyToMany(cascade=CascadeType.PERSIST)
+		@ManyToMany(fetch=FetchType.EAGER)
+		//多对多的实现方式就是中间表方式实现
+		@JoinTable(name="t_user_role",joinColumns=@JoinColumn(name="user_id"),inverseJoinColumns=@JoinColumn(name="role_id"))
+		private Set<Tb_Role> roles = new HashSet<Tb_Role>();
+		public Integer getTid() {
+			return tid;
+		}
+		public void setTid(Integer tid) {
+			this.tid = tid;
+		}
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		public String getPassword() {
+			return password;
+		}
+		public void setPassword(String password) {
+			this.password = password;
+		}
+		public Set<Tb_Role> getRoles() {
+			return roles;
+		}
+		public void setRoles(Set<Tb_Role> roles) {
+			this.roles = roles;
+		}
+	}
+
+```
+
+	编写实体表 - 角色表
+	
+```java
+	package com.doosan.sb.dao.domain;
+	import java.util.HashSet;
+	import java.util.Set;
+	import javax.persistence.Column;
+	import javax.persistence.Entity;
+	import javax.persistence.FetchType;
+	import javax.persistence.GeneratedValue;
+	import javax.persistence.GenerationType;
+	import javax.persistence.Id;
+	import javax.persistence.ManyToMany;
+	import javax.persistence.Table;
+	/**
+	 * 角色表实体
+	 */
+	@Entity
+	@Table(name="tb_role")
+	public class Tb_Role {
+		@Id
+		@GeneratedValue(strategy=GenerationType.AUTO)
+		@Column(name="tid")
+		private Integer tid;
+		@Column(name="name")
+		private String name;
+		//多对多,一个角色对应多个用户
+		@ManyToMany(mappedBy="roles",fetch=FetchType.EAGER)
+		private Set<Tb_User> users = new HashSet<Tb_User>();
+		
+		public Set<Tb_User> getUsers() {
+			return users;
+		}
+		public void setUsers(Set<Tb_User> users) {
+			this.users = users;
+		}
+		public Integer getTid() {
+			return tid;
+		}
+		public void setTid(Integer tid) {
+			this.tid = tid;
+		}
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+	}
+```
+
+	编写单元测试代码：
+	
+```java
+	package com.doosan.sb.test;
+	import java.util.Iterator;
+	import org.junit.Test;
+	import org.junit.runner.RunWith;
+	import org.springframework.beans.factory.annotation.Autowired;
+	import org.springframework.boot.test.context.SpringBootTest;
+	import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+	import com.doosan.sb.ApplicationStarter;
+	import com.doosan.sb.dao.domain.Tb_Role;
+	import com.doosan.sb.dao.domain.Tb_User;
+	import com.doosan.sb.dao.role.RoleDao;
+	import com.doosan.sb.dao.user.UserDao;
+	@RunWith(SpringJUnit4ClassRunner.class)				//Junit和spring环境进行整合
+	@SpringBootTest(classes={ApplicationStarter.class})	//SpringBoot测试类，加载springboot启动类
+	public class ManyToManyTest {
+
+		@Autowired
+		private UserDao userDao;
+		@Autowired
+		private RoleDao roleDao;
+		
+		@Test
+		public void testSaveUserAndRole(){
+			//Create user
+			Tb_User user = new Tb_User();
+			user.setName("Harry");
+			user.setPassword("12345678");
+			//Create role
+			Tb_Role roleA = new Tb_Role();
+			roleA.setName("RoleA");
+			Tb_Role roleB = new Tb_Role();
+			roleB.setName("RoleB");
+			//connect user and role
+			user.getRoles().add(roleA);
+			user.getRoles().add(roleB);
+			roleA.getUsers().add(user);
+			roleB.getUsers().add(user);
+			//save data
+			userDao.save(user);
+		}	
+		@Test
+		public void testSaveUser(){
+			Tb_User user = new Tb_User();
+			user.setName("UserD");
+			user.setPassword("1234ABCD");
+	//		user.getRoles().add(roleDao.findOne(1));
+	//		user.getRoles().add(roleDao.findOne(2));
+			userDao.save(user);
+		}
+		@Test
+		public void testSaveRole(){
+			Tb_Role role = new Tb_Role();
+			role.setName("RoleD");
+			userDao.findOne(5).getRoles().add(role);
+			userDao.findOne(6).getRoles().add(role);
+			role.getUsers().add(userDao.findOne(5));
+			role.getUsers().add(userDao.findOne(6));
+			roleDao.save(role);
+		}
+		@Test
+		public void testUpdateUser(){
+			Tb_User user = userDao.findOne(5);
+	//		user.getRoles().clear();
+			user.getRoles().add(roleDao.findOne(3));
+			user.getRoles().add(roleDao.findOne(5));
+			userDao.save(user);
+		}
+		@Test
+		public void testQuery(){
+			Tb_User user = userDao.findOne(5);
+			Iterator<Tb_Role> roles = user.getRoles().iterator();
+			while(roles.hasNext()){
+				Tb_Role role = roles.next();
+				System.out.println("User : " + user.getName() + ", role Name : " + role.getName());
+			}
+			Tb_Role role = roleDao.findOne(3);
+			Iterator<Tb_User> users = role.getUsers().iterator();
+			while(users.hasNext()){
+				Tb_User u = users.next();
+				System.out.println("Role : " + role.getName() + ", user name is : " + u.getName());
+			}
+		}
+	} 
+```
