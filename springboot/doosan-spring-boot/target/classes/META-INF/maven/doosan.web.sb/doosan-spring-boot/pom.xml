@@ -27,10 +27,15 @@
   		<groupId>org.springframework.boot</groupId>
     	<artifactId>spring-boot-starter-test</artifactId>
   	</dependency>
-  	<!-- SpringBoot缓存 -->
+  	<!-- SpringBoot-ehcache缓存 -->
   	<dependency>
   		<groupId>org.springframework.boot</groupId>
     	<artifactId>spring-boot-starter-cache</artifactId>
+  	</dependency>
+  	<!-- SpringBoot-Redis缓存 -->
+  	<dependency>
+  		<groupId>org.springframework.boot</groupId>
+    	<artifactId>spring-boot-starter-data-redis</artifactId>
   	</dependency>
   	<!-- Echcache支持  -->
 	<dependency>
