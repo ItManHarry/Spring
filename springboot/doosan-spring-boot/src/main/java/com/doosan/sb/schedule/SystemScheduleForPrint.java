@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SystemScheduleForPrint {
 
-	@Scheduled(cron="3 * * * * ?")
+	@Scheduled(cron="0/3 * * * * ?")
 	public void run(){
 		System.out.println("Execute the schedule task : ("+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())+")");
 	}
