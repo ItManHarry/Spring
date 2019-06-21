@@ -9,6 +9,7 @@ import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import com.doosan.sb.filter.FilterUsage;
 import com.doosan.sb.listener.ListenerUsage;
 import com.doosan.sb.servlet.ServletUsage;
@@ -19,6 +20,7 @@ import com.doosan.sb.servlet.ServletUsage;
 //@ServletComponentScan	//SpringBoot扫描@WebServlet注解对应的类
 @MapperScan("com.doosan.sb.dao")	//MyBtis扫描
 @EnableCaching						//启用缓存
+@EnableScheduling					//启动定时任务
 public class ApplicationStarter {
 	
 	public static void main(String[] args){
