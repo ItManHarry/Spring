@@ -134,3 +134,105 @@
 
 ## 方式二：集成quartz框架
 
+- 导入quartz包(pom.xml)
+
+```xml
+	<dependency>
+		<groupId>org.quartz-scheduler</groupId>
+		<artifactId>quartz</artifactId>
+		<version>2.2.1</version>
+	</dependency>
+```
+
+- 编写job类，实现Job接口
+
+```java
+	package com.doosan.sb.schedule;
+	import java.text.SimpleDateFormat;
+	import java.util.Date;
+	import org.quartz.Job;
+	import org.quartz.JobExecutionContext;
+	import org.quartz.JobExecutionException;
+
+	public class QuartzJobForPrint implements Job {
+
+		@Override
+		public void execute(JobExecutionContext arg0) throws JobExecutionException {
+			// TODO Auto-generated method stub
+			System.out.println("Quartz job has been executed..." + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+		}
+	}
+```
+
+- 编写任务调度代码
+
+```java
+	package com.doosan.sb.schedule;
+	import org.quartz.JobBuilder;
+	import org.quartz.JobDetail;
+	import org.quartz.Scheduler;
+	import org.quartz.SimpleScheduleBuilder;
+	import org.quartz.Trigger;
+	import org.quartz.TriggerBuilder;
+	import org.quartz.impl.StdSchedulerFactory;
+
+	public class QuartzMain {
+		
+		public static void main(String[] args) throws Exception{
+			//创建job对象
+			JobDetail job = JobBuilder.newJob(QuartzJobForPrint.class).build();
+			//创建trigger
+			/**
+			 * 1.简单trigger : 简单重复
+			 * 2.cron trigger : 按照cron表达式重复
+			 */
+			Trigger trigger = TriggerBuilder.newTrigger().withSchedule(SimpleScheduleBuilder.repeatSecondlyForever(5)).build();
+			//创建schedule对象
+			Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+			scheduler.scheduleJob(job, trigger);
+			//启动定时任务
+			scheduler.start();
+		}
+	}
+```
+
+- 实现SpringBoot整合quartz
+
+	1.编写配置类
+	
+```java
+	package com.doosan.sb.schedule;
+	import org.springframework.context.annotation.Bean;
+	import org.springframework.context.annotation.Configuration;
+	import org.springframework.scheduling.quartz.JobDetailFactoryBean;
+	import org.springframework.scheduling.quartz.SchedulerFactoryBean;
+	import org.springframework.scheduling.quartz.SimpleTriggerFactoryBean;
+	@Configuration
+	public class QuartzConfig {
+		//创建job对象
+		@Bean
+		public  JobDetailFactoryBean getJobDetailFactoryBean(){
+			JobDetailFactoryBean factory =  new JobDetailFactoryBean();
+			factory.setJobClass(QuartzJobForPrint.class);
+			return factory;
+		}
+		//创建trigger
+		@Bean
+		public SimpleTriggerFactoryBean getSimpleTriggerFactoryBean(JobDetailFactoryBean jobDetailFactoryBean){
+			SimpleTriggerFactoryBean factory = new SimpleTriggerFactoryBean();
+			factory.setJobDetail(jobDetailFactoryBean.getObject());
+			//设置间隔时间(单位统一为毫秒)
+			factory.setRepeatInterval(5000);
+			//设置循环次数
+			factory.setRepeatCount(4);
+			return factory;		
+		}
+		//创建schedule对象
+		@Bean
+		public SchedulerFactoryBean getSchedulerFactoryBean(SimpleTriggerFactoryBean triggerFactoryBean){
+			SchedulerFactoryBean factory = new SchedulerFactoryBean();
+			factory.setTriggers(triggerFactoryBean.getObject());
+			return factory;
+		}	
+	}
+```
