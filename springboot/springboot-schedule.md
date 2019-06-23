@@ -204,6 +204,7 @@
 	package com.doosan.sb.schedule;
 	import org.springframework.context.annotation.Bean;
 	import org.springframework.context.annotation.Configuration;
+	import org.springframework.scheduling.quartz.CronTriggerFactoryBean;
 	import org.springframework.scheduling.quartz.JobDetailFactoryBean;
 	import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 	import org.springframework.scheduling.quartz.SimpleTriggerFactoryBean;
@@ -217,22 +218,38 @@
 			return factory;
 		}
 		//创建trigger
+	//	@Bean
+	//	public SimpleTriggerFactoryBean getSimpleTriggerFactoryBean(JobDetailFactoryBean jobDetailFactoryBean){
+	//		SimpleTriggerFactoryBean factory = new SimpleTriggerFactoryBean();
+	//		factory.setJobDetail(jobDetailFactoryBean.getObject());
+	//		//设置间隔时间(单位统一为毫秒)
+	//		factory.setRepeatInterval(5000);
+	//		//设置循环次数
+	//		factory.setRepeatCount(4);
+	//		return factory;		
+	//	}
+		//创建trigger
 		@Bean
-		public SimpleTriggerFactoryBean getSimpleTriggerFactoryBean(JobDetailFactoryBean jobDetailFactoryBean){
-			SimpleTriggerFactoryBean factory = new SimpleTriggerFactoryBean();
+		public CronTriggerFactoryBean getCronTriggerFactoryBean(JobDetailFactoryBean jobDetailFactoryBean){
+			CronTriggerFactoryBean factory = new CronTriggerFactoryBean();
 			factory.setJobDetail(jobDetailFactoryBean.getObject());
-			//设置间隔时间(单位统一为毫秒)
-			factory.setRepeatInterval(5000);
-			//设置循环次数
-			factory.setRepeatCount(4);
+			factory.setCronExpression("0/3 * * * * ?");
 			return factory;		
 		}
 		//创建schedule对象
 		@Bean
-		public SchedulerFactoryBean getSchedulerFactoryBean(SimpleTriggerFactoryBean triggerFactoryBean){
+		public SchedulerFactoryBean getSchedulerFactoryBean(CronTriggerFactoryBean triggerFactoryBean){
 			SchedulerFactoryBean factory = new SchedulerFactoryBean();
 			factory.setTriggers(triggerFactoryBean.getObject());
 			return factory;
 		}	
 	}
+```
+
+- Job对象无法注入Spring容器对象的问题
+
+	解决方法：重写AdaptableJobFactory类，代码如下：
+	
+```java
+	
 ```
