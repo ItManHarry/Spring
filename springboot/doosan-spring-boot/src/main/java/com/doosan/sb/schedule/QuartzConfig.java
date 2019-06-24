@@ -31,7 +31,7 @@ public class QuartzConfig {
 	public CronTriggerFactoryBean getCronTriggerFactoryBean(JobDetailFactoryBean jobDetailFactoryBean){
 		CronTriggerFactoryBean factory = new CronTriggerFactoryBean();
 		factory.setJobDetail(jobDetailFactoryBean.getObject());
-		factory.setCronExpression("0/10 * * * * ?");
+		factory.setCronExpression("10 * 9 * * ?");
 		return factory;		
 	}
 	//创建schedule对象

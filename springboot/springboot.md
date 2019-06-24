@@ -390,7 +390,7 @@
 	
 - Thymeleaf
 
-	1.pom.xml文件中导入Freemarker依赖包
+	1.pom.xml文件中导入Thymeleaf依赖包
 	
 ```xml
 	<dependency>
@@ -458,10 +458,10 @@
 			<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 			<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 			<title>Thymeleaf Page</title>
-			<link rel = "stylesheet" th:href="@{/css/bootstrap.min.css}" href = "../../../static/css/bootstrap.min.css" media="screen"/>
-			<script type = "text/javascript" th:src="@{/js/bootstrap.min.js}" src = "../../../static/js/bootstrap.min.js" charset="UTF-8"></script>
-			<script type = "text/javascript" th:src="@{/js/jquery-1.11.3.min.js}" src = "../../../static/js/jquery-1.11.3.min.js" charset="UTF-8"></script>
-			<script type = "text/javascript" th:src="@{/js/vue.js}" src = "../../../static/js/vue.js" charset="UTF-8"></script>
+			<link rel = "stylesheet" th:href="@{/css/bootstrap.min.css}" media="screen"/>
+			<script type = "text/javascript" th:src="@{/js/bootstrap.min.js}" charset="UTF-8"></script>
+			<script type = "text/javascript" th:src="@{/js/jquery-1.11.3.min.js}" charset="UTF-8"></script>
+			<script type = "text/javascript" th:src="@{/js/vue.js}" charset="UTF-8"></script>
 		</head>
 		<body>
 			<div class="container-fluid" id = "contentdiv"> 
@@ -705,7 +705,7 @@
 	spring.datasource.username=fs
 	spring.datasource.password=fileShare2017
 	spring.datasource.type=com.alibaba.druid.pool.DruidDataSource	//连接池类型
-	mybatis.type-aliases-package=com.doosan.sb.dao.domain			//实体表扫描包
+	mybatis.type-aliases-package=com.doosan.sb.dao.domain			//实体表别名扫描包
 ```
 
 - 编写mybatis接口文件

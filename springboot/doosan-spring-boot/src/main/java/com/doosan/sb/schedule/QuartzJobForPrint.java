@@ -22,6 +22,6 @@ public class QuartzJobForPrint implements Job {
 		employee.setName("Tomcat");
 		employee.setTelphone("15856463746");
 		employeeService.save(employee);
-		System.out.println("Quartz job has been executed..." + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+		System.out.println("Quartz job has been executed(" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())+"), employee has been created.");
 	}
 }
