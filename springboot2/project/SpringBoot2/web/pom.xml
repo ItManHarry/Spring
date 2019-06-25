@@ -1,0 +1,30 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>doosan.spring.boot2</groupId>
+    <artifactId>SpringBoot2</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>web</artifactId>
+  <name>sb-web</name>
+  <description>Spring Boot2 Web</description>
+  <dependencies>
+  	<!-- web引入持久层 -->
+  	<dependency>
+  		<artifactId>persistence</artifactId>
+  		<groupId>doosan.spring.boot2</groupId>
+    	<version>0.0.1-SNAPSHOT</version>
+  	</dependency>
+  </dependencies>
+  <build>
+  	<plugins>
+		<plugin>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-maven-plugin</artifactId>
+			<configuration>
+				<mainClass>com.doosan.spring.boot2.SpringBoot2Application</mainClass>
+			</configuration>
+		</plugin>
+	</plugins>
+  </build>
+</project>
