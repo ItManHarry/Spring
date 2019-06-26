@@ -3,8 +3,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.reactive.function.server.ServerResponse
+
 import com.doosan.spring.boot2.dao.UserDao
 import com.doosan.spring.boot2.dao.entity.User
+import com.doosan.spring.boot2.result.ResponseResultJson
+import com.doosan.spring.boot2.result.ResponseResultObject
+import com.doosan.spring.boot2.result.ResponseResults
 import reactor.core.publisher.Mono
 @RestController
 class UserController {
@@ -19,7 +24,7 @@ class UserController {
 		user.setRemark(remark)
 		boolean r = userDao.save(user)
 		if(r)
-			println "The user has been saved succefully..." + user
+			println "The user has been saved successfully..." + user
 		return user
 	}
 	/**
@@ -32,5 +37,18 @@ class UserController {
 	@GetMapping("/user/get")
 	Mono<User> getUser(Integer id){
 		return Mono.just(userDao.getUserById(id))
-	}	
+	}
+	/**
+	 * 统一返回接口数据
+	 * @param id
+	 * @return
+	 */
+	@GetMapping("/user/json")
+	ResponseResultObject<User> getJson(Integer id){
+		User user = userDao.getUserById2(id)
+		if(user)
+			return ResponseResultJson.success(user)
+		else
+			return ResponseResultJson.error(ResponseResults.NOTFOUND)
+	}
 }

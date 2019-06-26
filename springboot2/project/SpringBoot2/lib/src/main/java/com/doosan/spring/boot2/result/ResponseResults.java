@@ -1,5 +1,9 @@
 package com.doosan.spring.boot2.result;
-
+/**
+ * 集中管理返回的枚举类
+ * @author 20112004
+ *
+ */
 public enum ResponseResults {
 	
 	SUCCESS(200, "执行成功"),

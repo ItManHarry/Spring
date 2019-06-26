@@ -34,7 +34,7 @@ public class UserDao {
 		return  Mono.empty();
 	}
 	/**
-	 * 返回0或1个元素
+	 * 返回0或1个元素 - webflux返回对象
 	 * @param uid
 	 * @return
 	 */
@@ -43,6 +43,14 @@ public class UserDao {
 			return Mono.empty();
 		else 
 			return Mono.just(db.get(uid));
+	}
+	/**
+	 * web框架返回对象
+	 * @param uid
+	 * @return
+	 */
+	public User getUserById2(Integer uid){
+		return db.get(uid);
 	}
 	/**
 	 * 返回0或n个元素
