@@ -4,11 +4,17 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
 import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.servlet.ModelAndView
 import com.doosan.sb.dao.domain.SysUser
 import com.doosan.sb.service.user.SysUserService
+import com.doosan.sb.app.response.ResponseResultObject
+import com.doosan.sb.app.response.ResponseResultJson
+import com.doosan.sb.app.results.ResponseResults
 @Controller
 @RequestMapping("/system/user")
 class SystemUserController {
@@ -100,6 +106,48 @@ class SystemUserController {
 //		mv.setViewName("view/thymeleaf/user/nullPointerError")
 //		return mv
 //	}
+	/**
+	 * 统一返回接口数据
+	 * @param id
+	 * @return
+	 */
+	@GetMapping("/rest/json/{id}")
+	@ResponseBody
+	ResponseResultObject<SysUser> getJson1(@PathVariable("id") Integer id){
+		SysUser user = sysUserService.getUserById(id)
+		if(user)
+			return ResponseResultJson.success(user)
+		else
+			return ResponseResultJson.error(ResponseResults.NOTFOUND)
+	}
+	/**
+	 * 统一返回接口数据
+	 * @param id
+	 * @return
+	 */
+	@GetMapping("/get")
+	@ResponseBody
+	ResponseResultObject<SysUser> getJson2(Integer id){
+		SysUser user = sysUserService.getUserById(id)
+		if(user)
+			return ResponseResultJson.success(user)
+		else
+			return ResponseResultJson.error(ResponseResults.NOTFOUND)
+	}
+	/**
+	 * 统一返回接口数据
+	 * @param id
+	 * @return
+	 */
+	@GetMapping("/all")
+	@ResponseBody
+	ResponseResultObject<List<SysUser>> getAll(){
+		List<SysUser> users = sysUserService.all()
+		if(users)
+			return ResponseResultJson.success(users)
+		else
+			return ResponseResultJson.error(ResponseResults.NOTFOUND)
+	}
 	
 	@Autowired
 	private SysUserService sysUserService;
