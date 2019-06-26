@@ -1,10 +1,10 @@
 package com.doosan.spring.boot2.controller.user
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.reactive.function.server.ServerResponse
-
 import com.doosan.spring.boot2.dao.UserDao
 import com.doosan.spring.boot2.dao.entity.User
 import com.doosan.spring.boot2.result.ResponseResultJson
@@ -45,6 +45,19 @@ class UserController {
 	 */
 	@GetMapping("/user/json")
 	ResponseResultObject<User> getJson(Integer id){
+		User user = userDao.getUserById2(id)
+		if(user)
+			return ResponseResultJson.success(user)
+		else
+			return ResponseResultJson.error(ResponseResults.NOTFOUND)
+	}
+	/**
+	 * 统一返回接口数据
+	 * @param id
+	 * @return
+	 */
+	@GetMapping("/user/rest/json/{id}")
+	ResponseResultObject<User> getJson2(@PathVariable("id") Integer id){
 		User user = userDao.getUserById2(id)
 		if(user)
 			return ResponseResultJson.success(user)
