@@ -281,6 +281,21 @@
 	</dependencies>	
 ```
 		
+## Spring Boot构造一个统一的接口返回对象
 
-- 子模块与主模块的依赖关系
+- 前后端分离开发，以JSON进行数据交互
+
+	- SpringBoot默认问Jackson
+	
+- 统一返回接口数据渲染
+
+	- Web(HTML5)
+	
+	- Android
+	
+	- iOS
+	
+	- 微信
+	
+	- 其他客户端
 
