@@ -299,3 +299,395 @@
 	
 	- 其他客户端
 
+- 实现方式
+
+	1.编写统一的返回状态码及状态信息 - 枚举数据
+	
+```java
+	package com.doosan.spring.boot2.result;
+	/**
+	 * 集中管理返回的枚举类
+	 * @author 20112004
+	 *
+	 */
+	public enum ResponseResults {
+		
+		SUCCESS(200, "执行成功"),
+		NOTFOUND(0, "无数据"),
+		NOTACCESS(403, "拒绝请求"),
+		ERROR(500, "内部错误"),
+		ERROR_TOKEN(502, "用户Token错误"),
+		ERROR_TIMEOUT(503, "连接超时"),
+		ERROR_UNKNOWN(555, "未知错误");
+		
+		private int status;
+		private String message;
+		
+		ResponseResults(int status, String message){
+			this.status = status;
+			this.message = message;
+		}
+
+		public int getStatus() {
+			return status;
+		}
+
+		public void setStatus(int status) {
+			this.status = status;
+		}
+
+		public String getMessage() {
+			return message;
+		}
+
+		public void setMessage(String message) {
+			this.message = message;
+		}	
+	}
+```
+
+	2.编写返回数据对象
+	
+```java
+	package com.doosan.spring.boot2.result;
+	import java.sql.Timestamp;
+	/**
+	 * 返回接口数据类
+	 * @author 20112004
+	 * @param <T>
+	 */
+	public class ResponseResultObject<T> {
+		//响应状态码
+		private Integer status;
+		//响应消息
+		private String message;
+		//返回对象
+		private T data;
+		//时间戳
+		private Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		
+		public ResponseResultObject(){}
+		
+		
+		public ResponseResultObject(ResponseResults results){
+			this.status = results.getStatus();
+			this.message = results.getMessage();
+		}
+
+
+		public Integer getStatus() {
+			return status;
+		}
+
+
+		public void setStatus(Integer status) {
+			this.status = status;
+		}
+
+
+		public String getMessage() {
+			return message;
+		}
+
+
+		public void setMessage(String message) {
+			this.message = message;
+		}
+
+
+		public T getData() {
+			return data;
+		}
+
+
+		public void setData(T data) {
+			this.data = data;
+		}
+
+
+		public Timestamp getTimestamp() {
+			return timestamp;
+		}
+
+
+		public void setTimestamp(Timestamp timestamp) {
+			this.timestamp = timestamp;
+		}
+	}
+```
+
+	3.编写返回JSON数据对象
+	
+```java
+	package com.doosan.spring.boot2.result;
+	/**
+	 * 返回Json数据
+	 * @author 20112004
+	 *
+	 */
+	public class ResponseResultJson {
+		/**
+		 * 无结果返回成功
+		 * @return
+		 */
+		@SuppressWarnings("rawtypes")
+		public static ResponseResultObject success(){
+			return success(null);
+		}
+		/**
+		 * 有数据返回成功
+		 * @param object
+		 * @return
+		 */
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		public static ResponseResultObject success(Object object){
+			ResponseResultObject resultOject = new ResponseResultObject(ResponseResults.SUCCESS);
+			resultOject.setData(object);
+			return resultOject;
+		}
+		/**
+		 * 返回错误
+		 * @param results
+		 * @return
+		 */
+		@SuppressWarnings("rawtypes")
+		public static ResponseResultObject error(ResponseResults results){
+			ResponseResultObject resultOject = new ResponseResultObject(results);
+			return resultOject;
+		}
+		
+	}
+```
+
+	4.实体对象类
+	
+```java
+	package com.doosan.spring.boot2.dao.entity;
+	import java.io.Serializable;
+	import java.util.Date;
+	import com.fasterxml.jackson.annotation.JsonFormat;
+	import com.fasterxml.jackson.annotation.JsonIgnore;
+	import com.fasterxml.jackson.annotation.JsonInclude;
+
+	public class User implements Serializable{
+
+		private static final long serialVersionUID = 6266407321527104244L;
+		private Integer id;
+		private String name;
+		private Integer age;
+		@JsonInclude(JsonInclude.Include.NON_NULL)	//数据为空的话就不返回前台
+		private String remark;
+		@JsonIgnore 								//数据不会返回到前端
+		private String password;
+		@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",locale="zh",timezone="GMT+8") 	//数据格式化
+		private Date createDate;
+		
+		public User(){}
+
+		public User(Integer id, String name, Integer age, String remark) {
+			super();
+			this.id = id;
+			this.name = name;
+			this.age = age;
+			this.remark = remark;
+		}
+		
+		public Integer getId() {
+			return id;
+		}
+		public void setId(Integer id) {
+			this.id = id;
+		}
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		public Integer getAge() {
+			return age;
+		}
+		public void setAge(Integer age) {
+			this.age = age;
+		}
+		public String getRemark() {
+			return remark;
+		}
+		public void setRemark(String remark) {
+			this.remark = remark;
+		}
+
+		public String getPassword() {
+			return password;
+		}
+
+		public void setPassword(String password) {
+			this.password = password;
+		}
+
+		public Date getCreateDate() {
+			return createDate;
+		}
+
+		public void setCreateDate(Date createDate) {
+			this.createDate = createDate;
+		}
+	}
+```
+	
+	5.编写dao层
+	
+```java
+	/**
+	 * web框架返回对象
+	 * @param uid
+	 * @return
+	 */
+	public User getUserById2(Integer uid){
+		return db.get(uid);
+	}
+	/**
+	 * web框架返回所有数据
+	 * @return
+	 */
+	public List<User> getAll(){
+		List<User> users = new ArrayList<>();
+		Iterator<User> its = db.values().iterator();
+		while(its.hasNext()){
+			users.add(its.next());
+		}
+		return users;
+	}
+```
+
+	6.变成Controller层代码
+	
+```groovy
+	/**
+	 * 统一返回接口数据
+	 * @param id
+	 * @return
+	 */
+	@GetMapping("/user/json")
+	ResponseResultObject<User> getJson(Integer id){
+		User user = userDao.getUserById2(id)
+		if(user)
+			return ResponseResultJson.success(user)
+		else
+			return ResponseResultJson.error(ResponseResults.NOTFOUND)
+	}
+	/**
+	 * 统一返回接口数据
+	 * @param id
+	 * @return
+	 */
+	@GetMapping("/user/rest/json/{id}")
+	ResponseResultObject<User> getJson2(@PathVariable("id") Integer id){
+		User user = userDao.getUserById2(id)
+		if(user)
+			return ResponseResultJson.success(user)
+		else
+			return ResponseResultJson.error(ResponseResults.NOTFOUND)
+	}
+	/**
+	 * 统一返回接口数据
+	 * @param id
+	 * @return
+	 */
+	@GetMapping("/user/rest/json/all")
+	ResponseResultObject<List<User>> getAll(){
+		def users = userDao.getAll()
+		if(users)
+			return ResponseResultJson.success(users)
+		else
+			return ResponseResultJson.error(ResponseResults.NOTFOUND)
+	}
+```
+
+## Spring Boot静态资源配置
+
+- 自定义配置文件映射到实体类
+
+	- 创建一个properties文件
+	
+	- 创建一个对应的Javabean
+	
+- 引入maven包
+
+```java
+	<!-- 配置文件加载 -->
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-configuration-processor</artifactId>
+		<optional>true</optional>
+	</dependency>
+```
+
+- 配置文件(customer.properties)
+
+```
+	com.doosan.project=SpringBoot2.0
+	com.doosan.version=1.0
+```
+
+- 实体代码
+
+```java
+	package com.doosan.spring.boot2.dao.entity;
+	import java.io.Serializable;
+	import org.springframework.boot.context.properties.ConfigurationProperties;
+	import org.springframework.context.annotation.Configuration;
+	import org.springframework.context.annotation.PropertySource;
+	@Configuration
+	@ConfigurationProperties(prefix="com.doosan")
+	@PropertySource(value="classpath:customer.properties")
+	public class Customer implements Serializable{
+
+		private static final long serialVersionUID = 7164220872305562512L;
+		private String project;
+		private String version;
+		
+		public String getProject() {
+			return project;
+		}
+		public void setProject(String project) {
+			this.project = project;
+		}
+		public String getVersion() {
+			return version;
+		}
+		public void setVersion(String version) {
+			this.version = version;
+		}
+	}
+```
+
+- 控制层代码
+
+```java
+	package com.doosan.spring.boot2.controller.user
+	import org.springframework.beans.BeanUtils
+	import org.springframework.beans.factory.annotation.Autowired
+	import org.springframework.web.bind.annotation.GetMapping
+	import org.springframework.web.bind.annotation.RestController
+	import com.doosan.spring.boot2.dao.entity.Customer
+	import com.doosan.spring.boot2.result.ResponseResultJson
+	import com.doosan.spring.boot2.result.ResponseResultObject
+	@RestController
+	class CustomerController {
+
+		@Autowired
+		private Customer customer
+		/**
+		 * 统一返回接口数据
+		 * @param id
+		 * @return
+		 */
+		@GetMapping("/customer/get")
+		ResponseResultObject<Customer> getCustomer(){
+			Customer vo = new Customer()
+			BeanUtils.copyProperties(customer, vo)
+			return ResponseResultJson.success(vo)
+		}
+	}
+```

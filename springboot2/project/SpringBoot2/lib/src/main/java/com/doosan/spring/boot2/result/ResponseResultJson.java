@@ -9,6 +9,7 @@ public class ResponseResultJson {
 	 * 无结果返回成功
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public static ResponseResultObject success(){
 		return success(null);
 	}
@@ -17,6 +18,7 @@ public class ResponseResultJson {
 	 * @param object
 	 * @return
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static ResponseResultObject success(Object object){
 		ResponseResultObject resultOject = new ResponseResultObject(ResponseResults.SUCCESS);
 		resultOject.setData(object);
@@ -27,6 +29,7 @@ public class ResponseResultJson {
 	 * @param results
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public static ResponseResultObject error(ResponseResults results){
 		ResponseResultObject resultOject = new ResponseResultObject(results);
 		return resultOject;

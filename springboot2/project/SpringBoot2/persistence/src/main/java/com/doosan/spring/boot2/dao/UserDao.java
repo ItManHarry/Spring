@@ -1,4 +1,7 @@
 package com.doosan.spring.boot2.dao;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,10 +18,10 @@ public class UserDao {
 	private final static AtomicInteger id = new AtomicInteger();
 	
 	public UserDao(){
-		db.put(1, new User(1, "Harry", 25, "Remark1"));
-		db.put(2, new User(2, "Jack", 25, "Remark2"));
-		db.put(3, new User(3, "Tom", 25, "Remark3"));
-		db.put(4, new User(4, "Alex", 25, "Remark4"));
+//		db.put(1, new User(1, "Harry", 25, "Remark1"));
+//		db.put(2, new User(2, "Jack", 25, "Remark2"));
+//		db.put(3, new User(3, "Tom", 25, "Remark3"));
+//		db.put(4, new User(4, "Alex", 25, "Remark4"));
 	}
 	//保存
 	public boolean save(User user){
@@ -58,6 +61,18 @@ public class UserDao {
 	 */
 	public Flux<User> findAll(){
 		return Flux.fromIterable(db.values());
+	}
+	/**
+	 * web框架返回所有数据
+	 * @return
+	 */
+	public List<User> getAll(){
+		List<User> users = new ArrayList<>();
+		Iterator<User> its = db.values().iterator();
+		while(its.hasNext()){
+			users.add(its.next());
+		}
+		return users;
 	}
 	/**
 	 * 执行删除

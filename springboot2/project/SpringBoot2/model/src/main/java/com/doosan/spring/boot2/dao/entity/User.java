@@ -1,5 +1,10 @@
 package com.doosan.spring.boot2.dao.entity;
 import java.io.Serializable;
+import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 public class User implements Serializable{
 
@@ -7,7 +12,12 @@ public class User implements Serializable{
 	private Integer id;
 	private String name;
 	private Integer age;
+	@JsonInclude(JsonInclude.Include.NON_NULL)	//数据为空的话就不返回前台
 	private String remark;
+	@JsonIgnore 								//数据不会返回到前端
+	private String password;
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",locale="zh",timezone="GMT+8") 	//数据格式化
+	private Date createDate;
 	
 	public User(){}
 
@@ -42,5 +52,21 @@ public class User implements Serializable{
 	}
 	public void setRemark(String remark) {
 		this.remark = remark;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public Date getCreateDate() {
+		return createDate;
+	}
+
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
 	}
 }

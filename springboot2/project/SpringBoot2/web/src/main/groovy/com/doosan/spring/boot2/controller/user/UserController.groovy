@@ -22,6 +22,8 @@ class UserController {
 		user.setAge(age)
 		user.setName(name)
 		user.setRemark(remark)
+		user.setCreateDate(new Date())
+		user.setPassword("123456")
 		boolean r = userDao.save(user)
 		if(r)
 			println "The user has been saved successfully..." + user
@@ -61,6 +63,19 @@ class UserController {
 		User user = userDao.getUserById2(id)
 		if(user)
 			return ResponseResultJson.success(user)
+		else
+			return ResponseResultJson.error(ResponseResults.NOTFOUND)
+	}
+	/**
+	 * 统一返回接口数据
+	 * @param id
+	 * @return
+	 */
+	@GetMapping("/user/rest/json/all")
+	ResponseResultObject<List<User>> getAll(){
+		def users = userDao.getAll()
+		if(users)
+			return ResponseResultJson.success(users)
 		else
 			return ResponseResultJson.error(ResponseResults.NOTFOUND)
 	}
