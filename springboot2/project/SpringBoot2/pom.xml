@@ -42,6 +42,11 @@
 	    	<artifactId>spring-boot-configuration-processor</artifactId>
 	    	<optional>true</optional>
 	  	</dependency>
+	  	<!-- 集成Freemarker -->
+	  	<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-freemarker</artifactId>
+		</dependency>
 	  	<!-- 集成thymeleaf -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

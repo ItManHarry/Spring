@@ -1,7 +1,6 @@
 package com.doosan.spring.boot2.dao.entity;
 import java.io.Serializable;
 import java.util.Date;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -21,12 +20,14 @@ public class User implements Serializable{
 	
 	public User(){}
 
-	public User(Integer id, String name, Integer age, String remark) {
+	public User(Integer id, String name, Integer age, String remark, String password, Date createDate) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.age = age;
 		this.remark = remark;
+		this.password = password;
+		this.createDate = createDate;
 	}
 	
 	public Integer getId() {
