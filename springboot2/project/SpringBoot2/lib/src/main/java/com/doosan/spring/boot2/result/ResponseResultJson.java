@@ -35,4 +35,14 @@ public class ResponseResultJson {
 		return resultOject;
 	}
 	
+	/**
+	 * 返回错误
+	 * @param results
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	public static ResponseResultObject error(Integer status, String message, String exceptionURL){
+		ResponseResultObject resultOject = new ResponseResultObject(status, message, exceptionURL);
+		return resultOject;
+	}
 }

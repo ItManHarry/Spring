@@ -12,7 +12,9 @@ public enum ResponseResults {
 	ERROR(500, "内部错误"),
 	ERROR_TOKEN(502, "用户Token错误"),
 	ERROR_TIMEOUT(503, "连接超时"),
-	ERROR_UNKNOWN(555, "未知错误");
+	ERROR_UNKNOWN(555, "未知错误"),
+	ERROR_USERNOTFOUND(700, "用户不存在"),
+	ERROR_WRONGPWD(701, "密码错误");
 	
 	private int status;
 	private String message;

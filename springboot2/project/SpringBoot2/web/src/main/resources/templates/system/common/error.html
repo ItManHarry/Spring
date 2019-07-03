@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<title>System Error Page</title>
+		<link rel="shortcut icon" type="image/x-icon" th:href = "@{/images/logoes/way.ico}" media="screen" />
+		<link rel = "stylesheet" th:href = "@{/css/bootstrap.min.css}" media="screen"/>
+		<script type = "text/javascript" th:src = "@{/js/bootstrap.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/js/jquery-1.11.3.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/js/vue.js}" charset="UTF-8"></script>
+	</head>
+	<body>
+		<div class="container-fluid" id = "contentdiv"> 
+			<div class = "row">
+				<div class = "col-sm-12">
+					<h3>错误代码 : ${status}</h3>
+				</div> 
+				<div class = "col-sm-12">
+					<h3>错误信息 : ${message}</h3>
+				</div> 
+				<div class = "col-sm-12">
+					<h3>错误地址 : ${exceptionURL}</h3>
+				</div> 
+			</div>
+		</div>
+		<script>
+			
+		</script>
+	</body>
+</html>
