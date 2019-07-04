@@ -210,6 +210,7 @@
 	import org.springframework.scheduling.quartz.SimpleTriggerFactoryBean;
 	@Configuration
 	public class QuartzConfig {
+		
 		//创建job对象
 		@Bean
 		public  JobDetailFactoryBean getJobDetailFactoryBean(){
@@ -233,14 +234,17 @@
 		public CronTriggerFactoryBean getCronTriggerFactoryBean(JobDetailFactoryBean jobDetailFactoryBean){
 			CronTriggerFactoryBean factory = new CronTriggerFactoryBean();
 			factory.setJobDetail(jobDetailFactoryBean.getObject());
-			factory.setCronExpression("0/3 * * * * ?");
+			factory.setCronExpression("10 * 9 * * ?");
 			return factory;		
 		}
 		//创建schedule对象
 		@Bean
-		public SchedulerFactoryBean getSchedulerFactoryBean(CronTriggerFactoryBean triggerFactoryBean){
+		public SchedulerFactoryBean getSchedulerFactoryBean(CronTriggerFactoryBean triggerFactoryBean, QuartzAdaptableJobFactory jobFactory){
 			SchedulerFactoryBean factory = new SchedulerFactoryBean();
-			factory.setTriggers(triggerFactoryBean.getObject());
+			//关联trigger
+			factory.setTriggers(triggerFactoryBean.getObject());	
+			//重写JobFactory
+			factory.setJobFactory(jobFactory);
 			return factory;
 		}	
 	}
@@ -251,5 +255,24 @@
 	解决方法：重写AdaptableJobFactory类，代码如下：
 	
 ```java
-	
+	package com.doosan.sb.schedule;
+	import org.quartz.spi.TriggerFiredBundle;
+	import org.springframework.beans.factory.annotation.Autowired;
+	import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+	import org.springframework.scheduling.quartz.AdaptableJobFactory;
+	import org.springframework.stereotype.Component;
+	@Component("jobFactory")
+	public class QuartzAdaptableJobFactory extends AdaptableJobFactory {
+		@Autowired
+		private AutowireCapableBeanFactory factory;
+
+		@Override
+		protected Object createJobInstance(TriggerFiredBundle bundle) throws Exception {
+			//创建job对象
+			Object jobInstance = super.createJobInstance(bundle);
+			//放入Spring容器
+			factory.autowireBean(jobInstance);
+			return jobInstance;
+		}
+	}
 ```
