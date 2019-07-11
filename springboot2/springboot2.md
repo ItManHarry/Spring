@@ -694,3 +694,227 @@
 
 ## 异常处理
 
+	编写自定义异常类
+	
+```java
+	package com.ch.dev.system.exception;
+	import com.ch.dev.system.results.WebServerResults;
+	/**
+	 * 自定义一个Exception
+	 * 	扩展RuntimeException, 增加一个status属性
+	 * @author 20112004
+	 * 注意：
+	 * 	如果继承RuntimeException,Spring框架是支持事务回滚的
+	 * 	如果继承Exception,Spring框架是不支持事务回滚的
+	 *
+	 */
+	public class WebServerException extends RuntimeException {
+
+		private static final long serialVersionUID = 6258084126128409605L;
+		private Integer status;
+		
+		public WebServerException(){
+			
+		}
+		
+		public WebServerException(Integer status, String message){
+			super(message);
+			this.status = status;
+		}
+		
+		public WebServerException(WebServerResults result){
+			super(result.getMessage());
+			this.status = result.getStatus();
+		}
+		
+		public WebServerException(WebServerResults result, Exception e){
+			super((e.getMessage() != null) ? (result.getMessage() + ":" + e.getMessage()) : result.getMessage());
+			this.status = result.getStatus();
+		}
+		
+		
+		public Integer getStatus() {
+			return status;
+		}
+		public void setStatus(Integer status) {
+			this.status = status;
+		}
+	}
+```
+
+	编写异常处理类
+	
+```java
+	package com.ch.dev.system.exception.handler;
+	import javax.servlet.http.HttpServletRequest;
+	import org.slf4j.Logger;
+	import org.slf4j.LoggerFactory;
+	import org.springframework.web.bind.annotation.ControllerAdvice;
+	import org.springframework.web.bind.annotation.ExceptionHandler;
+	import org.springframework.web.bind.annotation.ResponseBody;
+	import org.springframework.web.servlet.ModelAndView;
+	import com.ch.dev.system.exception.WebServerException;
+	import com.ch.dev.system.results.WebServerResultJson;
+	/**
+	 * Exception异常处理
+	 * 兼容说明：
+	 * 	支持HTTP WEB异常页面跳转
+	 * 	支持AJAX JSON异常数据返回
+	 * @author 20112004
+	 *
+	 */
+	@ControllerAdvice
+	public class WebServerExceptionHandler {
+		private final static Logger logger = LoggerFactory.getLogger(WebServerExceptionHandler.class);
+		public static final String ERROR_PAGE = "system/common/error";
+		@ExceptionHandler(value=WebServerException.class)
+		@ResponseBody
+		public Object handle(HttpServletRequest request, Exception e){
+			//获取异常页面URL地址
+			String exceptionURL = null;
+			Object o = request.getRequestURL();
+			if(o != null)
+				exceptionURL = request.getRequestURL().toString();
+			//异常处理
+			if(e instanceof WebServerException){
+				logger.error("000 自定义异常：{}", e);
+				WebServerException se = (WebServerException)e;
+				if(!isAjax(request))
+					return exceptionView(se.getStatus(), se.getMessage(), exceptionURL);
+				else
+					return WebServerResultJson.error(se.getStatus(), se.getMessage(), exceptionURL);
+			}else{
+				logger.error("500 系统异常", e);
+				if(!isAjax(request))
+					return exceptionView(500, e.toString(), exceptionURL);
+				else
+					return WebServerResultJson.error(500, e.toString(), exceptionURL);
+			}
+		}
+		/**
+		 * 判断请求是否是异步请求
+		 * @return
+		 */
+		private static boolean isAjax(HttpServletRequest request){
+			String header = request.getHeader("x-requested-with");
+			boolean ajax = "XMLHttpRequest".equals(header) ? true : false;
+			return ajax;
+		}
+		/**
+		 * 错误页面跳转
+		 * @param status
+		 * @param message
+		 * @param exceptionURL
+		 * @return
+		 */
+		private static ModelAndView exceptionView(Integer status, String message, String exceptionURL){
+			ModelAndView mav = new ModelAndView();
+			mav.addObject("status",status);
+			mav.addObject("message", message);
+			mav.addObject("exceptionURL", exceptionURL);
+			mav.setViewName(ERROR_PAGE);
+			return mav;
+		}
+	}	
+```
+
+## Spring Boot异步任务处理
+
+- 在项目启动类增加@EnableAsync注解，开启SpringBoot异步任务
+
+- 编写异步处理类
+
+```java
+	package com.ch.dev.task;
+	import java.time.Duration;
+	import java.time.Instant;
+	import java.util.concurrent.Future;
+	import org.springframework.scheduling.annotation.Async;
+	import org.springframework.scheduling.annotation.AsyncResult;
+	import org.springframework.stereotype.Component;
+	/**
+	 * Asynchronize
+	 * @author 20112004
+	 *
+	 */
+	@Component
+	public class WebServerAsyncTask {
+
+		/**
+		 * Do the delete logger task
+		 * @return
+		 * @throws Exception
+		 */
+		@Async
+		public Future<Boolean> deleteLogger() throws Exception{
+			Instant t1 = Instant.now();
+			for(int i = 0; i < 1000; i++){
+				System.out.println("--- doing delete the log action ---");
+			}
+			Thread.sleep(1000);
+			Instant t2 = Instant.now();
+			Duration duration = Duration.between(t1, t2);
+			System.out.println("Delete logger used " + duration.toMillis() + " ms");
+			return new AsyncResult<Boolean>(true);		
+		}
+		/**
+		 * Do delete 
+		 * @return
+		 * @throws Exception
+		 */
+		@Async
+		public Future<Boolean> deleteOrders() throws Exception{
+			Instant t1 = Instant.now();
+			for(int i = 0; i < 1000; i++){
+				System.out.println("*** doing delete the order action ***");
+			}
+			Thread.sleep(600);
+			Instant t2 = Instant.now();
+			Duration duration = Duration.between(t1, t2);
+			System.out.println("Delete orders used " + duration.toMillis() + " ms");
+			return new AsyncResult<Boolean>(true);		
+		} 
+	}
+```
+
+- 编写测试类型，使用定时任务执行
+
+```java
+	package com.ch.dev.task;
+	import java.time.Duration;
+	import java.time.Instant;
+	import java.util.concurrent.Future;
+	import org.springframework.beans.factory.annotation.Autowired;
+	import org.springframework.scheduling.annotation.Scheduled;
+	import org.springframework.stereotype.Component;
+	/**
+	 * Do the task
+	 * @author 20112004
+	 *
+	 */
+	@Component
+	public class DoWebServerAsyncTask {
+
+		@Autowired
+		private WebServerAsyncTask wsat;
+		@Scheduled(cron="0 0/1 * * * ?")
+		public void test() throws Exception{
+			System.out.println("Now do the async task...");
+			runAsync();
+		}
+		
+		private void runAsync() throws Exception{
+			Instant start = Instant.now();
+			Future<Boolean> logger = wsat.deleteLogger();
+			Future<Boolean> orders = wsat.deleteOrders();
+			while(!logger.isDone() || !orders.isDone()){
+				if(logger.isDone() && orders.isDone())
+					break;
+				
+			}
+			Instant end = Instant.now();
+			Duration d = Duration.between(start, end);
+			System.out.println("All task have been finished , used (" + d.toMillis() + ") ms");
+		}	
+	}
+```
