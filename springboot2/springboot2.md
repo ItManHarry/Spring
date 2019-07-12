@@ -918,3 +918,215 @@
 		}	
 	}
 ```
+
+## SpringBoot拦截器
+
+- 创建一个配置类，继承WebMVCConfigurationSupport
+
+	- 重写 addInterceptors方法
+	
+```java
+	package com.ch.dev.configuration.inteceptors;
+	import org.springframework.beans.factory.annotation.Value;
+	import org.springframework.context.annotation.Configuration;
+	import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+	import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+	import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
+	/**
+	 * System Intercepttors
+	 * @author 20112004
+	 *
+	 */
+	@Configuration
+	public class WebServerMvcConfigration extends WebMvcConfigurationSupport {
+
+		@Value("${system.image.path}")
+		private String imagePath;
+
+		public String getImagePath() {
+			return imagePath;
+		}
+
+		public void setImagePath(String imagePath) {
+			this.imagePath = imagePath;
+		}
+
+		@Override
+		protected void addInterceptors(InterceptorRegistry registry) {
+			System.out.println("Image path : " + imagePath);
+			//拦截器是按照顺序来执行的,先执行前面的拦截器
+			registry.addInterceptor(new TokenInterceptor())
+				.excludePathPatterns("/register","/favicon.ico")
+				.addPathPatterns("/*/**");
+			
+			registry.addInterceptor(new LoggerInteceptor())
+				.addPathPatterns("/*/**");
+			super.addInterceptors(registry);
+		}
+
+		@Override
+		protected void addResourceHandlers(ResourceHandlerRegistry registry) {
+			
+			registry.addResourceHandler("/favicon.ico")
+				.addResourceLocations("/static/**")
+				.addResourceLocations("classpath:/static/");
+			System.out.println("Image path : " + imagePath);
+			registry.addResourceHandler("/custom/**")
+				.addResourceLocations("file:"+imagePath);
+			super.addResourceHandlers(registry);
+		}		
+	}
+```
+	
+- 创建拦截器实现类，继承HandlerInterceptor
+
+	- 重写父类的三个方法
+	
+```java
+	package com.ch.dev.configuration.inteceptors;
+	import java.io.OutputStream;
+	import javax.servlet.http.HttpServletRequest;
+	import javax.servlet.http.HttpServletResponse;
+	import org.springframework.web.servlet.HandlerInterceptor;
+	import org.springframework.web.servlet.ModelAndView;
+	import com.ch.dev.system.exception.WebServerException;
+	import com.ch.dev.system.results.WebServerResultJson;
+	import com.ch.dev.system.results.WebServerResultObject;
+	import com.ch.dev.system.results.WebServerResults;
+	import com.ch.dev.utils.JsonUtils;
+	/**
+	 * 系统登录拦截器
+	 */
+	public class TokenInterceptor implements HandlerInterceptor {
+
+		
+		/**
+		 * 在Controller执行前调用
+		 */
+		@SuppressWarnings("unchecked")
+		@Override
+		public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object object) throws Exception {
+			System.out.println("令牌处理拦截器...... URL : " + request.getRequestURI());
+			String user = request.getParameter("username");
+			if(user != null && user.equals("Harry")){
+				errorOutput(response, WebServerResultJson.error(WebServerResults.ERROR_USERNOTFOUND));
+				System.out.println("The user has logined ...");
+				return true;
+			}
+			throw new WebServerException(800, "Please input user name");
+		}
+		/**
+		 * 在Controller执行之后,视图渲染前调用
+		 */
+		@Override
+		public void postHandle(HttpServletRequest request, HttpServletResponse response, Object object, ModelAndView mav)
+				throws Exception {
+			// TODO Auto-generated method stub
+			if(mav != null){
+				System.out.println("ViewName : " + mav.getViewName() + "------------------" + request.getRequestURI());
+			}
+		}
+		/**
+		 * 在Controller执行完成,视图渲染完毕后调用
+		 */
+		@Override
+		public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object object, Exception e)
+				throws Exception {
+			System.out.println("Finished the request ......" + request.getRequestURI());		
+		}
+		/**
+		 * 拦截后的错误输出
+		 * @param response
+		 * @param result
+		 * @throws Exception
+		 */
+		private void errorOutput(HttpServletResponse response, WebServerResultObject<Object> result) throws Exception{
+			OutputStream output = null;
+			try{
+				response.setContentType("text/json");
+				response.setCharacterEncoding("utf-8");
+				output = response.getOutputStream();
+				output.write(JsonUtils.objectToJson(result).getBytes("utf-8"));
+				output.flush();
+			}finally{
+				if(output != null)
+					output.close();
+			}
+		}
+	}
+```
+
+	- JSON处理类
+	
+```java
+	package com.ch.dev.utils;
+	import java.util.List;
+	import com.fasterxml.jackson.core.JsonProcessingException;
+	import com.fasterxml.jackson.databind.JavaType;
+	import com.fasterxml.jackson.databind.ObjectMapper;
+	import com.fasterxml.jackson.databind.util.JSONPObject;
+	/**
+	 * Json转换工具
+	 */
+	public class JsonUtils {
+
+		private static final ObjectMapper MAPPER = new ObjectMapper();
+		/**
+		 * 对象转为字符串
+		 * @param data
+		 * @return
+		 */
+		public static String objectToJson(Object data){
+			try{
+				String string = MAPPER.writeValueAsString(data);
+				return string;
+			}catch(JsonProcessingException e){
+				e.printStackTrace();
+			}
+			return null;
+		}
+		/**
+		 * 将json字符串转换为对象
+		 * @param jsonData
+		 * @param clazz
+		 * @return
+		 */
+		public static <T> T jsonToBean(String jsonData, Class<T> clazz){
+			try{
+				T t = MAPPER.readValue(jsonData, clazz);
+				return t;
+			}catch(Exception e){
+				e.printStackTrace();
+			}		
+			return null;
+		}
+		/**
+		 * 将json字符串转换为pojo对象list
+		 * @param jsonData
+		 * @param beanType
+		 * @return
+		 */
+		public static <T>List<T> jsonToList(String jsonData, Class<T> beanType){
+			JavaType javaType = MAPPER.getTypeFactory().constructParametricType(List.class, beanType);
+			try{
+				List<T> list = MAPPER.readValue(jsonData, javaType);
+				return list;
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			return null;
+		}
+		/**
+		 * 输出JSONP字符串
+		 * @param functionName
+		 * @param o
+		 * @return
+		 */
+		public String toJsonpString(String functionName, Object o){
+			JSONPObject jsonp = new JSONPObject(functionName, o);
+			return jsonp.toString();
+		}
+	}
+```
+
+- postman验证地址：http://localhost:8080/login?usercd=20112004&password=123&username=Harry
