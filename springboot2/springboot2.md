@@ -1251,7 +1251,214 @@
 
 ## 单元测试
 
-- Service方法测试
+- 方式一 : Service方法测试
 
+- 方式二 : API(Controller层)访问测试
 
-- API(Controller层)访问测试
+代码：
+
+```java
+	package com.ch.dev.test;
+	import java.util.List;
+	import org.junit.Test;
+	import org.junit.runner.RunWith;
+	import org.springframework.beans.factory.annotation.Autowired;
+	import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+	import org.springframework.boot.test.context.SpringBootTest;
+	import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+	import org.springframework.test.web.servlet.MockMvc;
+	import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+	import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+	import com.ch.dev.WebServerStarter;
+	import com.ch.dev.domain.SysUser;
+	import com.ch.dev.service.SysUserService;
+	@RunWith(SpringJUnit4ClassRunner.class)
+	@SpringBootTest(classes={WebServerStarter.class})
+	@AutoConfigureMockMvc
+	public class LoginControllerTest {
+
+		@Autowired
+		private SysUserService sysUserService;
+		@Autowired
+		private MockMvc mvc;
+		/**
+		 * 测试方式一:service层测试
+		 * @throws Exception
+		 */
+		@Test
+		public void testLoginByService() throws Exception{
+			List<SysUser> users = sysUserService.findByUsercd("20112004");
+			for(SysUser u : users){
+				System.out.println("User Name : " + u.getUsernm() + ", password : " + u.getPassword());
+			}
+		}	
+		/**
+		 * 测试方式二:controller层测试
+		 */
+		@Test
+		public void testLoginByUrl() throws Exception{
+			mvc.perform(MockMvcRequestBuilders.get("/system/login?usercd=20112004&password=12345678"))
+			.andExpect(MockMvcResultMatchers.status().isOk())
+			.andExpect(MockMvcResultMatchers.content().string("20112004"));
+		}
+	}
+```
+
+- maven打包跳过测试包，安装使用maven插件即可(pom.xml)
+
+```xml
+	<!-- 跳过测试文件不打包 -->
+	<plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-surefire-plugin</artifactId>
+		<version>2.18.1</version>
+		<configuration>
+			<skipTests>true</skipTests>
+		</configuration>
+	</plugin>
+```
+
+## SpringBoot日志配置
+
+- SpringBoot默认使用Logback
+
+- 配置application.properties文件，指定logback配置文件
+
+```
+	logging.config=classpath:logback-spring.xml
+```
+
+- resources下配置logback-spring.xml文件中的
+
+```xml
+	<?xml version="1.0" encoding="UTF-8"?>
+	<configuration debug="false" scan="true" scanPeriod="60 second">
+		<!-- 定义日志文件路径,勿在Logback配置文件中使用相对路径 -->
+		<property name="LOG_HOME" value="D:/spring/logs" />
+		<property name="FILESIZE" value="20MB" />
+		<property name="MAXHISTORY" value="30" />
+		<timestamp key="DATETIME" datePattern="yyyy-MM-dd HH:mm:ss" />
+		<!-- 控制台打印 -->
+		<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+			<!-- 格式化输出 : %d表示日期 ;%thread表示线程;%-5level:级别从左显示5个字符宽度;%msg:日志消息;%n：换行符 -->
+			<encoder charset="utf-8" class = "ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+				<pattern>%d{${DATETIME}} [%thread] %-5level %logger{50} - %msg%n</pattern>
+			</encoder>
+		</appender>
+		<!-- 按照每天生成日志 -->
+		<appender name = "FILE" class = "ch.qos.logback.core.rolling.RollingFileAppender">
+			<rollingPolicy class = "ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+				<!-- 日志文件名 -->
+				<fileNamePattern>${LOG_HOME}/webserver.log.%d{yyyy-MM-dd}.log</fileNamePattern>
+				<!-- 日志文件保留天数 -->
+				<maxHistory>${MAXHISTORY}</maxHistory>
+			</rollingPolicy>
+			<!-- 格式化输出 : %d表示日期 ;%thread表示线程;%-5level:级别从左显示5个字符宽度;%msg:日志消息;%n：换行符 -->
+			<encoder charset="utf-8" class = "ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+				<pattern>%d{${DATETIME}} [%thread] %-5level %logger{50} - %msg%n</pattern>
+			</encoder>
+			<triggeringPolicy class = "ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+				<MaxFileSize>${FILESIZE}</MaxFileSize>
+			</triggeringPolicy>
+		</appender>
+		<!-- 按照每天生成错误日志 -->
+		<appender name = "ERROR-FILE" class = "ch.qos.logback.core.rolling.RollingFileAppender">
+			<rollingPolicy class = "ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+				<!-- 日志文件名 -->
+				<fileNamePattern>${LOG_HOME}/webserver-error.log.%d{yyyy-MM-dd}.log</fileNamePattern>
+				<!-- 日志文件保留天数 -->
+				<maxHistory>${MAXHISTORY}</maxHistory>
+			</rollingPolicy>
+			<!-- 格式化输出 : %d表示日期 ;%thread表示线程;%-5level:级别从左显示5个字符宽度;%msg:日志消息;%n：换行符 -->
+			<encoder charset="utf-8" class = "ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+				<pattern>%d{${DATETIME}} [%thread] %-5level %logger{50} - %msg%n</pattern>
+			</encoder>
+			<triggeringPolicy class = "ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+				<MaxFileSize>${FILESIZE}</MaxFileSize>
+			</triggeringPolicy>
+			<filter class = "ch.qos.logback.classic.filter.LevelFilter">
+				<level>error</level>
+				<onMismatch>DENY</onMismatch>
+			</filter>
+		</appender>
+		<!-- 工程默认日志级别 -->
+		<logger name = "com.ch.dev" level = "debug"/>
+		<!-- SQL相关日志输出-->
+		<logger name="jdbc.sqltiming" level="debug" />
+		<logger name="com.ibatis" level="debug" />
+		<logger name="com.ibatis.common.jdbc.SimpleDataSource" level="debug" />
+		<logger name="com.ibatis.common.jdbc.ScriptRunner" level="debug" />
+		<logger name="com.ibatis.sqlmap.engine.impl.SqlMapClientDelegate" level="debug" />
+		<logger name="java.sql.Connection" level="debug" />
+		<logger name="java.sql.Statement" level="debug" />
+		<logger name="java.sql.PreparedStatement" level="debug" />
+		<logger name="java.sql.ResultSet" level="debug" />    
+		<!-- Logger 根目录 -->
+		<root level="DEBUG">
+			<appender-ref ref = "STDOUT" />
+			<appender-ref ref = "FILE" />  
+			<appender-ref ref = "ERROR-FILE"/>
+		</root>
+	</configuration>
+```
+
+注：配置完日志文件后，启动工程会报异常，异常信息如下：
+
+```
+2019-07-15 15:35:08 [restartedMain] DEBUG o.s.s.a.ScheduledAnnotationBeanPostProcessor - Could not find default TaskScheduler bean
+org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'org.springframework.scheduling.TaskScheduler' available
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveNamedBean(DefaultListableBeanFactory.java:989)
+	at org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor.resolveSchedulerBean(ScheduledAnnotationBeanPostProcessor.java:287)
+	at org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor.finishRegistration(ScheduledAnnotationBeanPostProcessor.java:228)
+	at org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor.onApplicationEvent(ScheduledAnnotationBeanPostProcessor.java:205)
+	at org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor.onApplicationEvent(ScheduledAnnotationBeanPostProcessor.java:99)
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.doInvokeListener(SimpleApplicationEventMulticaster.java:172)
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.invokeListener(SimpleApplicationEventMulticaster.java:165)
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:139)
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:393)
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:347)
+	at org.springframework.context.support.AbstractApplicationContext.finishRefresh(AbstractApplicationContext.java:883)
+	at org.springframework.boot.context.embedded.EmbeddedWebApplicationContext.finishRefresh(EmbeddedWebApplicationContext.java:146)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:545)
+	at org.springframework.boot.context.embedded.EmbeddedWebApplicationContext.refresh(EmbeddedWebApplicationContext.java:124)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:693)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:360)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:303)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1118)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1107)
+	at com.ch.dev.WebServerStarter.main(WebServerStarter.java:12)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+2019-07-15 15:35:08 [restartedMain] DEBUG o.s.s.a.ScheduledAnnotationBeanPostProcessor - Could not find default ScheduledExecutorService bean
+org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'java.util.concurrent.ScheduledExecutorService' available
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveNamedBean(DefaultListableBeanFactory.java:989)
+	at org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor.resolveSchedulerBean(ScheduledAnnotationBeanPostProcessor.java:287)
+	at org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor.finishRegistration(ScheduledAnnotationBeanPostProcessor.java:249)
+	at org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor.onApplicationEvent(ScheduledAnnotationBeanPostProcessor.java:205)
+	at org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor.onApplicationEvent(ScheduledAnnotationBeanPostProcessor.java:99)
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.doInvokeListener(SimpleApplicationEventMulticaster.java:172)
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.invokeListener(SimpleApplicationEventMulticaster.java:165)
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:139)
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:393)
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:347)
+	at org.springframework.context.support.AbstractApplicationContext.finishRefresh(AbstractApplicationContext.java:883)
+	at org.springframework.boot.context.embedded.EmbeddedWebApplicationContext.finishRefresh(EmbeddedWebApplicationContext.java:146)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:545)
+	at org.springframework.boot.context.embedded.EmbeddedWebApplicationContext.refresh(EmbeddedWebApplicationContext.java:124)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:693)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:360)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:303)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1118)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1107)
+	at com.ch.dev.WebServerStarter.main(WebServerStarter.java:12)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:49)
+2019-07-15 15:35:08 [restartedMain] INFO  o.s.s.a.ScheduledAnnotationBeanPostProcessor - No 
+```
+以上异常信息可忽略，不会影响定时任务执行，只是Spring的定时任务调度器抛出的debug信息，详细参考：https://blog.csdn.net/oarsman/article/details/52801877
