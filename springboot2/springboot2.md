@@ -1130,3 +1130,128 @@
 ```
 
 - postman验证地址：http://localhost:8080/login?usercd=20112004&password=123&username=Harry
+
+- springboot设置不拦截静态资源的方法（这个问题我查了很久资料才解决！）
+
+	1.拦截器中的复写addResourceHandlers，重新指定静态资源路径
+	
+```java
+	@Override
+	protected void addResourceHandlers(ResourceHandlerRegistry registry) {
+		
+		registry.addResourceHandler("/static/**")
+			.addResourceLocations("classpath:/static/");
+		
+		System.out.println("Image path : " + imagePath);
+		
+		registry.addResourceHandler("/images/**")
+			.addResourceLocations("file:"+imagePath);
+		super.addResourceHandlers(registry);
+	}		
+```
+	
+	2.访问地址需要增加"static"
+	
+	如之前的访问地址："http://localhost:8080/html/index.html",需要变为"http://localhost:8080/static/html/index.html"
+	
+	3.页面改造；
+	
+	改之前：
+	
+```html
+	<link rel="shortcut icon" type="image/x-icon" th:href = "@{/images/logoes/way.ico}" media="screen" />
+	<link rel = "stylesheet" th:href = "@{/css/bootstrap.min.css}" media="screen"/>
+	<script type = "text/javascript" th:src = "@{/js/bootstrap.min.js}" charset="UTF-8"></script>
+	<script type = "text/javascript" th:src = "@{/js/jquery-1.11.3.min.js}" charset="UTF-8"></script>
+	<script type = "text/javascript" th:src = "@{/js/vue.js}" charset="UTF-8"></script>
+```
+
+	改之后(路径增加static)：
+
+```html
+	<link rel="shortcut icon" type="image/x-icon" th:href = "@{/static/images/logoes/way.ico}" media="screen" />
+	<link rel = "stylesheet" th:href = "@{/static/css/bootstrap.min.css}" media="screen"/>
+	<script type = "text/javascript" th:src = "@{/static/js/bootstrap.min.js}" charset="UTF-8"></script>
+	<script type = "text/javascript" th:src = "@{/static/js/jquery-1.11.3.min.js}" charset="UTF-8"></script>
+	<script type = "text/javascript" th:src = "@{/static/js/vue.js}" charset="UTF-8"></script>
+```
+	
+	4.参考网址
+	
+	https://www.cnblogs.com/kangkaii/p/9023751.html
+
+## 集成AOP
+
+- 引入aop
+
+```xml
+	<!-- 引入AOP -->
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-aop</artifactId>
+	</dependency>
+```
+
+- 编写AOP类
+
+```java
+	package com.ch.dev.configuration.aspects;
+	import javax.servlet.http.HttpServletRequest;
+	import org.aspectj.lang.JoinPoint;
+	import org.aspectj.lang.annotation.After;
+	import org.aspectj.lang.annotation.AfterReturning;
+	import org.aspectj.lang.annotation.Aspect;
+	import org.aspectj.lang.annotation.Before;
+	import org.aspectj.lang.annotation.Pointcut;
+	import org.slf4j.Logger;
+	import org.slf4j.LoggerFactory;
+	import org.springframework.stereotype.Component;
+	import org.springframework.web.context.request.RequestContextHolder;
+	import org.springframework.web.context.request.ServletRequestAttributes;
+	@Aspect
+	@Component
+	public class HTTPAspectComponent {
+		
+		private static final Logger logger = LoggerFactory.getLogger(HTTPAspectComponent.class);
+		
+		@Pointcut("execution(public * com.ch.dev.controller.system.login.*.*(..))")
+		public void path(){
+			
+		}
+
+		@Before("path()")
+		public void beforeLogin(JoinPoint joinPoint){
+			ServletRequestAttributes attributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
+			HttpServletRequest request = attributes.getRequest();
+			//URL
+			logger.info("URL : " + request.getRequestURL());
+			//IP
+			logger.info("IP : " + request.getRemoteAddr());
+			//Method
+			logger.info("Method : " + request.getMethod());
+			//Class
+			logger.info("Class : " + joinPoint.getSignature().getDeclaringTypeName() + "." + joinPoint.getSignature().getName());
+			//Parameters
+			logger.info("Args : " + joinPoint.getArgs().toString());
+			logger.info("LOG BEFORE LOGIN AOP...");
+		}
+		
+		@After("path()")
+		public void afterLogin(){
+			logger.info("LOG AFTER LOGIN AOP...");
+		}
+		
+		@AfterReturning(pointcut="path()", returning="object")
+		public void result(Object object){
+			if(object != null)
+				logger.info("Result : " + object.toString());
+		}
+	}
+```
+
+## 单元测试
+
+- Service方法测试
+
+
+- API(Controller层)访问测试
