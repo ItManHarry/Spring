@@ -708,6 +708,12 @@
 	mybatis.type-aliases-package=com.doosan.sb.dao.domain			//实体表别名扫描包
 ```
 
+-启动类增加扫描注解：
+
+```java
+	@MapperScan("com.doosan.sb.dao")	//MyBtis扫描
+```
+
 - 编写mybatis接口文件
 
 ```java
