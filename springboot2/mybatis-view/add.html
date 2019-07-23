@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<title>Employee Add Page</title>
+		<link rel="shortcut icon" type="image/x-icon" th:href = "@{/static/images/logoes/way.ico}" media="screen" />
+		<link rel = "stylesheet" th:href = "@{/static/css/bootstrap.min.css}" media="screen"/>
+		<script type = "text/javascript" th:src = "@{/static/js/bootstrap.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/static/js/jquery-1.11.3.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/static/js/vue.js}" charset="UTF-8"></script>
+	</head>
+	<body>
+		<div class="container-fluid" id = "contentdiv"> 
+			<div class = "row">
+				<div class = "col-sm-12">
+					<h3>Employee Add</h3>
+				</div> 
+			</div>
+			<hr>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<form action = "/biz/employee/save" method = "post">
+					  <div class="form-group">
+					    <label for="name">Name</label>
+					    <input type="text" class="form-control" id="name" name = "name" placeholder="Name">
+					  </div>
+					  <div class="form-group">
+					    <label for="job">Job</label>
+					    <input type="text" class="form-control" id="job" name = "job" placeholder="Job">
+					  </div>
+					  <button type="submit" class="btn btn-default">Submit</button>
+					</form>
+				</div> 
+			</div>
+			<hr>
+		</div>
+		<script>
+			var vm = new Vue({
+				el:"#contentdiv",
+				data:{
+					
+				},
+				methods:{
+					
+				}
+			});
+		</script>
+	</body>
+</html>

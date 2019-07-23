@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<title>Employee List Page</title>
+		<link rel="shortcut icon" type="image/x-icon" th:href = "@{/static/images/logoes/way.ico}" media="screen" />
+		<link rel = "stylesheet" th:href = "@{/static/css/bootstrap.min.css}" media="screen"/>
+		<script type = "text/javascript" th:src = "@{/static/js/bootstrap.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/static/js/jquery-1.11.3.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/static/js/bootstrap-table.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/static/js/locale/bootstrap-table-zh-CN.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/static/js/bootstrap-paginator.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/static/js/vue.js}" charset="UTF-8"></script>
+	</head>
+	<body>
+		<div class="container-fluid" id = "contentdiv"> 
+			<hr>
+			<div class = "row">
+				<div class = "col-sm-6 col-sm-offset-6 text-right">
+					<div class="input-group">
+	                    <input type = "text" placeholder = "name..." v-model = "name" class = "form-control input-sm"/>
+	                    <span class="input-group-btn">
+	                        <button class="btn btn-success btn-sm" type="button" @click = "doSearch">Search</button>
+	                    	&nbsp;&nbsp;<a th:href = "@{~/biz/employee/add}" class = "btn btn-primary btn-sm">&nbsp;&nbsp;Add&nbsp;&nbsp;</a>
+	                    </span>
+	                </div>
+				</div> 
+			</div>
+			<br>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<table class = "table table-bordered table-hover table-responsive" id = "list">
+						<thead>
+							<tr>
+								<th width = "10%">#ID</th>
+								<th width = "40%">Name</th>
+								<th width = "40%">Job</th>
+								<th width = "10%">Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for = "data in datas">
+								<td>{{data.id}}</td>
+								<td>{{data.name}}</td>
+								<td>{{data.job}}</td>
+								<!-- vue拼接超链接方式 -->
+								<td>
+									<a :href = "'/biz/employee/update?id='+data.id" class = "btn btn-link btn-xs">Edit</a>&nbsp;&nbsp;
+									<a :href = "'/biz/employee/move?id='+data.id" class = "btn btn-link btn-xs">Delete</a>
+								</td>						
+							</tr>
+						</tbody>
+					</table>
+					<nav class="text-right">
+					    <ul class="pagination"></ul>
+					</nav>					
+				</div> 
+			</div>
+		</div>
+		<script>
+			var vm = new Vue({
+				el:"#contentdiv",
+				data:{
+					datas:[],
+					name:"",
+					total:[[${total}]]	//获取后台记录总数
+				},
+				methods:{
+					doSearch:function(){
+						getData(1, this.name);
+					}
+				},
+				created:function(){
+					getData(1,this.name);					
+				}
+			});
+			$(function(){
+				$('.pagination').bootstrapPaginator({
+		            bootstrapMajorVersion: 3, 				//对应bootstrap版本
+		            size: 'small', 							//分页大小
+		            currentPage: 1, 						//当前页
+		            numberOfPages: 10, 						//显示的页数
+		            totalPages: Math.ceil(vm.total / 10), 	// 总页数
+		            /**
+		             * 分页点击事件
+		             * @param event [jquery对象]
+		             * @param originalEvent [dom原生对象]
+		             * @param type [按钮类型]
+		             * @param page [点击按钮对应的页码]
+		             */
+		            onPageClicked: function (event, originalEvent, type, page) {
+		               	getData(page,vm.name);
+		            }
+		        })
+			})
+			/**
+			*获取数据
+			*/
+			function getData(page,name){
+				$.ajax({
+					url:"/biz/employee/all",
+					type:"get",
+					data:{order:"name", page:page, limit:10, name:name},
+					dataType:"json",
+					success:function(r){
+						if(r.status == 200){
+							vm.total = r.number
+							//重新设置总页数
+							$('.pagination').bootstrapPaginator("setOptions", {
+								currentPage: page, 						//当前页
+								totalPages: Math.ceil(vm.total / 10), 	// 总页数
+							})
+							vm.datas = r.data
+						}
+					},
+					error:function(r){
+						alert(r.message)
+					}
+				})
+			}
+		</script>
+	</body>
+</html>
