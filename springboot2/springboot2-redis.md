@@ -590,7 +590,7 @@
 	}
 ```
 
-	注：执行clear方法进行缓存清除时，务必使用"\\*"通配符(Set<String> keys = redisTemplate.keys("\\*"+this.id+"\\*");)
+	注：执行clear方法进行缓存清除时，务必使用"*"通配符(Set<String> keys = redisTemplate.keys("*"+this.id+"*");)
 
 - Mybatis SQL xml文件配置缓存
 
