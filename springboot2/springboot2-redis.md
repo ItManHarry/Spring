@@ -458,6 +458,37 @@
 	}
 ```
 
+	注：此类中的applicationContext实例化的操作在启动类中设置(SpringContextUtils.setApplicationContext(context))：
+	
+```groovy
+	package com.ch.sys.biz
+	import org.springframework.boot.SpringApplication
+	import org.springframework.boot.autoconfigure.SpringBootApplication
+	import org.springframework.cache.annotation.EnableCaching
+	import org.springframework.context.ConfigurableApplicationContext
+	import org.springframework.scheduling.annotation.EnableAsync
+	import org.springframework.scheduling.annotation.EnableScheduling
+	import com.ch.sys.biz.BizApplication
+	import com.ch.sys.biz.system.utils.SpringContextUtils
+	/**
+	 * 工程启动
+	 * @author 20112004
+	 * 2019-07-23
+	 */
+	@SpringBootApplication
+	@EnableAsync
+	@EnableScheduling
+	@EnableCaching
+	class BizApplication {
+
+		static void main(String[] args) {
+			ConfigurableApplicationContext context = SpringApplication.run(BizApplication, args)
+			SpringContextUtils.setApplicationContext(context)
+		}
+
+	}
+```
+
 - 编写org.apache.ibatis.cache.Cache接口实现类
 
 ```java
