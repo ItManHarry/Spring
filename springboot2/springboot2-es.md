@@ -157,3 +157,25 @@
 		7.8. 查看elasticsearch.service状态
 		
 			systemctl status elasticsearch.service
+			
+	8. 安装配置Kibana
+	
+		8.1. 在es用户的根目录下解压kibana-6.8.2-linux-x86_64.tar.gz
+		
+			tar -zxvf kibana-6.8.2-linux-x86_64.tar.gz
+		
+		8.2. 配置Kibana，修改配置kibana.yml
+		
+			-$ vi kibana.yml
+			
+			server.port: 5601
+			server.host: "10.40.123.215"
+			elasticsearch.hosts:["10.40.123.215"]
+			
+			修改完毕保存退出:wq
+		
+		8.3. 启动Kibana，/kibana-6.8.2/bin/kibana
+		
+		8.4. 启动成功后，网页访问：
+		
+			http://10.40.123.215:5601
