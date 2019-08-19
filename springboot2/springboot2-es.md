@@ -488,15 +488,14 @@
 		动态映射规则如下：
 		
 | JSON数据 | 自动推测的类型 |
-
-|null		|没有字段被添加|
-|true或false	|boolean型|
-|小数		|float型|
-|数字		|long型|
-|日期		|date或text|
-|字符串		|text|
-|数组		|由数组第一个非空值决定|
-|JSON对象	|object类型|
+| null		| 没有字段被添加 |
+| true或false	| boolean型 |
+| 小数		| float型 |
+| 数字		| long型 |
+| 日期		| date或text |
+| 字符串		| text |
+| 数组		| 由数组第一个非空值决定 |
+| JSON对象	| object类型 |
 		
 	- 静态映射
 	
