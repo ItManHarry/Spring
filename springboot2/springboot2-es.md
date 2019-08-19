@@ -502,3 +502,101 @@
 	
 		在ElasticSearch中也可以事先定义好映射，包含文档的各字段类型，分词器等，这种方法称之为静态映射。
 	
+	
+- ElasticSearch文档映射-支持的数据类型
+
+	- 核心类型（Core datatypes）
+	
+		1. 字符串：String，String类型包含text和keyword
+		
+			1.1. text：该类型被用来索引长文本，在创建索引前会将这些文本进行分词，转化为词的组合，建立索引；允许es来检索这些词，text类型不能用来排序和聚合。
+			
+			1.2. keyword：该类型不能分词，可以被用来检索过滤、排序和聚合，keyword类型不可用text进行分词模糊检索
+			
+		2. 数值型：long/intege/short/byte/double/float
+		
+		3. 日期型：date
+		
+		4. 布尔型：boolean
+		
+		5. 二进制型：binary
+		
+	- 复杂数据类型（Complex datatypes）
+	
+	- 地理位置类型（Geo datatypes）
+	
+	- 特定类型（Specialised datatypes）
+	
+- ElasticSearch文档映射
+
+	- 获取映射
+	
+		get /doosan_db/user/_mapping
+		
+	- 动态映射
+	
+		1. 创建索引后，直接写入类型数据
+		
+			put /db_index
+			
+			put /db_index/user
+			{
+				"name":"Harry",
+				"age":25,
+				"gender":0,
+				"address":"SD YT",
+				"remark":"AN IT MAN"
+			}
+	
+	- 静态映射
+	
+		1. 预先定义映射
+		
+			post /db_index/_mapping/user
+			{
+			  "user":{
+				"properties":{
+				  "name":{"type":"keyword"},
+				  "sex":{"type":"integer"},
+				  "age":{"type":"integer"},
+				  "book":{"type":"text"},
+				  "remark":{"type":"text"},
+				  "test":{"type":"keyword"}
+				}
+			  }
+			}
+		
+		2. 插入数据
+		
+			put /db_index/user/1
+			{
+				"name":"Harry",
+				"sex":1,
+				"age":25,
+				"book":"Spring Boot 1",
+				"remark":"Hello world"
+			}
+	
+	- 对已存在的mapping映射进行修改
+	
+		具体方法：
+		
+		1. 新建已静态索引
+		
+		2. 把之前索引里的数据导入到新的索引中
+		
+		3. 删除原来的索引
+		
+		4. 为新索引起别名，为原索引名
+		
+		post _reindex
+		{
+			"source":{
+				"index":"db_index"
+			},
+			"dest":{
+				"index":"db_index1"
+			}
+		}
+		
+		以上步骤实现了索引的平滑过渡，并且是零停机。
