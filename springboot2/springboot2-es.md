@@ -600,3 +600,206 @@
 		}
 		
 		以上步骤实现了索引的平滑过渡，并且是零停机。
+		
+## ElasticSearch索引实现
+
+- ElasticSearch基于倒排索引的实现
+
+## ElasticSearch的IK中文分词器插件
+
+- 下载地址：https://github.com/medcl/elasticsearch-analysis-ik/releases
+
+	注意：es-ik的版本必须要和es安装版本一致
+	
+- Linux下安装
+	
+	1. elasticsearch-analysis-ik-6.8.2.zip下载完成后，重命名为ik.zip
+	
+	2. 上传到/opt/elasticsearch-6.8.2/plugins
+	
+	3. 重启ES
+	
+	4. 通过_analyze指令分词器演示ik_smart(ES默认分词器是standard)
+	
+		get _anylyze
+		{
+			"analyzer":"ik_smart",
+			"text":"我爱祖国"
+		}
+
+- ElasticSearch的IK中文分词自定义词语
+
+	1. 在/opt/elasticsearch-6.8.2/plugins/ik/config目录下创建一custom文件夹
+	
+	2. 在custom文件夹下新增my_word.dic文件，内容自己添加：如：流浪地球
+	
+	3. vi编辑config目录的IKAnalyzer.cfg.xml
+	
+		<entry key = "ext_dict">custom/my_word.dic</entry>
+		
+	4. 重启es
+	
+- 创建静态映射时指定text类型的ik分词器
+
+	1. 设置ik分词器的文档映射
+	
+		1.1. 先删除之前的db_index
+		
+		1.2. 创建新的db_index
+		
+		1.3. 定义ik_smart的映射
+		
+			post /db_index/_mapping/user
+			{
+			  "user":{
+				"properties":{
+				  "name":{"type":"keyword"},
+				  "sex":{"type":"integer"},
+				  "age":{"type":"integer"},
+				  "book":{
+					"type":"text",
+					"analyzer":"ik_smart",
+					"search_analyzer":"ik_smart"
+					},
+				  "remark":{"type":"text"},
+				  "test":{"type":"keyword"}
+				}
+			  }
+			}
+			
+## SpringBoot集成ElasticSearch
+
+- 引入ElasticSearch依赖pom.xml
+
+```xml
+	<!-- 集成ElasticSearch -->
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+	</dependency>
+```
+
+- 配置application.properties elasticsearch连接文件
+
+```
+	#configure elasticsearch
+	spring.data.elasticsearch.cluster-name=my-application
+	spring.data.elasticsearch.cluster-nodes=10.40.123.215:9300(若有多个节点，用逗号分开即可)
+```
+
+- 编写实体类
+
+```java
+	package com.ch.sys.biz.system.es.entity;
+	import org.springframework.data.annotation.Id;
+	import org.springframework.data.elasticsearch.annotations.Document;
+	@Document(indexName = "doosan_db", type = "book")
+	public class Book {
+
+		@Id
+		private String id;	
+		private String name;	
+		private String message;	
+		private String type ;
+		
+		public String getId() {
+			return id;
+		}
+		public void setId(String id) {
+			this.id = id;
+		}
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		public String getMessage() {
+			return message;
+		}
+		public void setMessage(String message) {
+			this.message = message;
+		}
+		public String getType() {
+			return type;
+		}
+		public void setType(String type) {
+			this.type = type;
+		}
+	}
+```
+
+- 编写service接口(继承于ElasticsearchRepository)
+
+```java
+	package com.ch.sys.biz.service.es;
+	import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
+	import com.ch.sys.biz.system.es.entity.Book;
+
+	public interface BookService extends ElasticsearchRepository<Book, String> {
+
+	}
+```
+
+- 编写Controller类
+
+```groovy
+	package com.ch.sys.biz.controller.system.es
+	import org.elasticsearch.index.query.BoolQueryBuilder
+	import org.elasticsearch.index.query.QueryBuilders
+	import org.springframework.beans.factory.annotation.Autowired
+	import org.springframework.data.domain.PageRequest
+	import org.springframework.data.domain.jaxb.SpringDataJaxb.PageRequestDto
+	import org.springframework.web.bind.annotation.GetMapping
+	import org.springframework.web.bind.annotation.PathVariable
+	import org.springframework.web.bind.annotation.PostMapping
+	import org.springframework.web.bind.annotation.RequestMapping
+	import org.springframework.web.bind.annotation.RestController
+	import com.ch.sys.biz.service.es.BookService
+	import com.ch.sys.biz.system.es.entity.Book
+	import com.github.pagehelper.Page
+
+	@RestController
+	@RequestMapping("/es/book")
+	class BookController {
+		
+		@Autowired
+		BookService bookService
+		
+		@PostMapping("/add")
+		Book add(Book book) {
+			bookService.save(book)
+			println "Book has been insert to the ES"
+			return book
+		}
+		
+		@PostMapping("/update")
+		Book update(Book book) {
+			bookService.save(book)
+			println "Book has been insert to the ES"
+			return book
+		}
+		
+		@PostMapping("/delete/{id}")
+		Book delete(@PathVariable String id) {
+			Optional<Book> op = bookService.findOne(id)
+			bookService.delete(op.get())
+			return op.get()
+		}
+		
+		@GetMapping("/search/{id}")
+		Optional<Book> getById(@PathVariable String id){
+			return bookService.findOne(id)
+		}
+		
+		@GetMapping("/search/{page}/{size}/{q}")
+		Page<Book> getByPages(@PathVariable Integer page, @PathVariable Integer size, @PathVariable String q){
+			BoolQueryBuilder builder = QueryBuilders.boolQuery()
+			builder.must(QueryBuilders.matchQuery("message", q))
+			Page<Book> pageList = bookService.search(builder, new PageRequest(page, size))
+			return pageList
+		}
+		
+	}
+```
+
