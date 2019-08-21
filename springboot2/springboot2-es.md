@@ -674,8 +674,24 @@
 ```xml
 	<!-- 集成ElasticSearch -->
 	<dependency>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+		<groupId>org.elasticsearch</groupId>
+		<artifactId>elasticsearch</artifactId>
+		<version>6.8.2</version>
+	</dependency>
+	<dependency>
+		<groupId>org.elasticsearch.client</groupId>
+		<artifactId>elasticsearch-rest-high-level-client</artifactId>
+		<version>6.8.2</version>
+	</dependency>
+	<dependency>
+		<groupId>org.elasticsearch.client</groupId>
+		<artifactId>elasticsearch-rest-client</artifactId>
+		<version>6.8.2</version>
+	</dependency>
+	<dependency>
+		<groupId>org.elasticsearch.client</groupId>
+		<artifactId>elasticsearch-rest-client-sniffer</artifactId>
+		<version>6.8.2</version>
 	</dependency>
 ```
 
