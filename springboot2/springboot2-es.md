@@ -703,118 +703,239 @@
 	spring.data.elasticsearch.cluster-nodes=10.40.123.215:9300(若有多个节点，用逗号分开即可)
 ```
 
+- 编写配置类
+
+```java
+	package com.ch.sys.biz.system.configuration.es;
+	import org.apache.http.HttpHost;
+	import org.slf4j.Logger;
+	import org.slf4j.LoggerFactory;
+	import org.elasticsearch.client.RestClient;
+	import org.elasticsearch.client.RestHighLevelClient;
+	import org.springframework.beans.factory.DisposableBean;
+	import org.springframework.beans.factory.FactoryBean;
+	import org.springframework.beans.factory.InitializingBean;
+	import org.springframework.beans.factory.annotation.Value;
+	import org.springframework.context.annotation.Configuration;
+	/**
+	 * ElasticSearch配置类
+	 */
+	@Configuration
+	public class ElasticsearchConfiguration implements FactoryBean<RestHighLevelClient>, InitializingBean, DisposableBean {
+
+		private final Logger logger = LoggerFactory.getLogger(this.getClass());
+		private RestHighLevelClient restHighLevelClient;
+		@Value("${spring.data.elasticsearch.cluster-nodes}")
+		private String clusterNodes;
+		
+		/**
+		  * 控制Bean的实例化过程
+		  * @return
+		  * @throws Exception
+		  */
+		 @Override
+		 public RestHighLevelClient getObject() throws Exception {
+			 return restHighLevelClient;
+		 }
+		 /**
+		  * 获取接口返回的实例的class
+		  * @return
+		  */
+		 @Override
+		 public Class<?> getObjectType() {
+			 return RestHighLevelClient.class;
+		 }
+	 
+		 @Override
+		 public void destroy() throws Exception {
+			 try {
+				 if(null != restHighLevelClient){
+					 restHighLevelClient.close();
+				 }
+			 } catch (final Exception e) {
+				 logger.error("Error closing ElasticSearch client: ", e);
+			 }
+		 }
+	 
+		 @Override
+		 public boolean isSingleton() {
+			 return false;
+		 }
+	 
+		 @Override
+		 public void afterPropertiesSet() throws Exception {
+			 restHighLevelClient = buildClient();
+		 }
+	 
+		 private RestHighLevelClient buildClient() {
+			 try {        	 
+				 restHighLevelClient = new RestHighLevelClient(
+						 RestClient.builder(
+								 new HttpHost(
+										 clusterNodes.split(":")[0],
+										 Integer.parseInt(clusterNodes.split(":")[1]),
+										 "http")));
+			 } catch (Exception e) {
+				 logger.error(e.getMessage());
+			 }
+			 return restHighLevelClient;
+		 }
+	}
+```
+
 - 编写实体类
 
 ```java
-	package com.ch.sys.biz.system.es.entity;
-	import org.springframework.data.annotation.Id;
-	import org.springframework.data.elasticsearch.annotations.Document;
-	@Document(indexName = "doosan_db", type = "book")
-	public class Book {
+	package com.ch.sys.biz.dao.es.entity;
+	import java.io.Serializable;
 
-		@Id
-		private String id;	
-		private String name;	
-		private String message;	
-		private String type ;
+	public class EsUser implements Serializable{	
 		
-		public String getId() {
-			return id;
+		private static final long serialVersionUID = -5013676039272947181L;
+		private String name;
+		private int sex;
+		private int age;
+		private String book;
+		private String remark;
+		
+		public EsUser() {}
+		
+		public EsUser(String name, int sex, int age, String book, String remark) {
+			super();
+			this.name = name;
+			this.sex = sex;
+			this.age = age;
+			this.book = book;
+			this.remark = remark;
 		}
-		public void setId(String id) {
-			this.id = id;
-		}
+		
 		public String getName() {
 			return name;
 		}
 		public void setName(String name) {
 			this.name = name;
 		}
-		public String getMessage() {
-			return message;
+		public int getSex() {
+			return sex;
 		}
-		public void setMessage(String message) {
-			this.message = message;
+		public void setSex(int sex) {
+			this.sex = sex;
 		}
-		public String getType() {
-			return type;
+		public int getAge() {
+			return age;
 		}
-		public void setType(String type) {
-			this.type = type;
+		public void setAge(int age) {
+			this.age = age;
 		}
+		public String getBook() {
+			return book;
+		}
+		public void setBook(String book) {
+			this.book = book;
+		}
+		public String getRemark() {
+			return remark;
+		}
+		public void setRemark(String remark) {
+			this.remark = remark;
+		}	
 	}
 ```
 
-- 编写service接口(继承于ElasticsearchRepository)
-
-```java
-	package com.ch.sys.biz.service.es;
-	import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
-	import com.ch.sys.biz.system.es.entity.Book;
-
-	public interface BookService extends ElasticsearchRepository<Book, String> {
-
-	}
-```
 
 - 编写Controller类
 
 ```groovy
 	package com.ch.sys.biz.controller.system.es
-	import org.elasticsearch.index.query.BoolQueryBuilder
-	import org.elasticsearch.index.query.QueryBuilders
 	import org.springframework.beans.factory.annotation.Autowired
-	import org.springframework.data.domain.PageRequest
-	import org.springframework.data.domain.jaxb.SpringDataJaxb.PageRequestDto
+	import org.springframework.web.bind.annotation.DeleteMapping
 	import org.springframework.web.bind.annotation.GetMapping
 	import org.springframework.web.bind.annotation.PathVariable
 	import org.springframework.web.bind.annotation.PostMapping
+	import org.springframework.web.bind.annotation.PutMapping
 	import org.springframework.web.bind.annotation.RequestMapping
 	import org.springframework.web.bind.annotation.RestController
-	import com.ch.sys.biz.service.es.BookService
-	import com.ch.sys.biz.system.es.entity.Book
-	import com.github.pagehelper.Page
-
+	import com.ch.sys.biz.dao.es.entity.EsUser
+	import com.ch.sys.biz.system.results.ServerResultJson
+	import com.fasterxml.jackson.databind.ObjectMapper
+	import java.net.Authenticator.RequestorType
+	import javax.servlet.http.HttpServletRequest
+	import org.elasticsearch.action.delete.DeleteRequest
+	import org.elasticsearch.action.delete.DeleteResponse
+	import org.elasticsearch.action.get.GetRequest
+	import org.elasticsearch.action.get.GetResponse
+	import org.elasticsearch.action.index.IndexRequest
+	import org.elasticsearch.action.update.UpdateRequest
+	import org.elasticsearch.client.RequestOptions
+	import org.elasticsearch.client.RestHighLevelClient
+	import org.elasticsearch.common.xcontent.XContentType
 	@RestController
-	@RequestMapping("/es/book")
-	class BookController {
-		
+	@RequestMapping("/es/user")
+	class UserController {
 		@Autowired
-		BookService bookService
-		
+		RestHighLevelClient restHighLevelClient
+
 		@PostMapping("/add")
-		Book add(Book book) {
-			bookService.save(book)
-			println "Book has been insert to the ES"
-			return book
+		def add() {
+			//以下使用json字符串进行存储
+			EsUser user = new EsUser()
+			user.setName("ESUserFromSpring")
+			user.setSex(1)
+			user.setAge(28)
+			user.setBook("ElasticSearch 入门到精通")
+			user.setRemark("数据来至于SpringBoot客户端")
+			ObjectMapper mapper = new ObjectMapper()
+			String jsonStr = mapper.writeValueAsString(user)
+			IndexRequest request = new IndexRequest("doosan_db", "user", UUID.randomUUID().toString()).source(jsonStr, XContentType.JSON)
+			restHighLevelClient.index(request, RequestOptions.DEFAULT)
+			return ServerResultJson.success("Added Successfully!")
 		}
 		
-		@PostMapping("/update")
-		Book update(Book book) {
-			bookService.save(book)
-			println "Book has been insert to the ES"
-			return book
+		@PutMapping("/update")
+		def update(HttpServletRequest request) {
+			GetRequest getRequest = new GetRequest("doosan_db", "user", request.getParameter("id").toString())
+			GetResponse response = restHighLevelClient.get(getRequest, RequestOptions.DEFAULT)
+			def data = response.getSourceAsMap()
+			EsUser user = new EsUser(data.get("name"), data.get("sex"), data.get("age"), data.get("book"), data.get("remark"))
+			user.setName(request.getParameter("name"))
+			user.setSex(Integer.parseInt(request.getParameter("sex")))
+			user.setAge(Integer.parseInt(request.getParameter("age")))
+			user.setBook(request.getParameter("book"))
+			user.setRemark(request.getParameter("remark"))
+			ObjectMapper mapper = new ObjectMapper()
+			String jsonStr = mapper.writeValueAsString(user)
+			UpdateRequest updateRequest = new UpdateRequest("doosan_db", "user", request.getParameter("id").toString()).doc(jsonStr, XContentType.JSON)
+			restHighLevelClient.update(updateRequest, RequestOptions.DEFAULT)
+			return ServerResultJson.success("Update Successfully!")
 		}
 		
-		@PostMapping("/delete/{id}")
-		Book delete(@PathVariable String id) {
-			Optional<Book> op = bookService.findOne(id)
-			bookService.delete(op.get())
-			return op.get()
+		@DeleteMapping("/delete/{id}")
+		def delete(@PathVariable String id) {
+			DeleteRequest request = new DeleteRequest("doosan_db", "user", id)
+			restHighLevelClient.delete(request, RequestOptions.DEFAULT)
+			return ServerResultJson.success("Delete Successfully!")
 		}
+		
 		
 		@GetMapping("/search/{id}")
-		Optional<Book> getById(@PathVariable String id){
-			return bookService.findOne(id)
+		def getById(@PathVariable("id") String id) {
+			GetRequest request = new GetRequest("doosan_db", "user", id)
+			GetResponse response = restHighLevelClient.get(request, RequestOptions.DEFAULT)
+			def data = response.getSourceAsMap()
+			data.each { k, v ->
+				println "Key is : $k, Value is : $v"
+			}
+			EsUser user = new EsUser(data.get("name"), data.get("sex"), data.get("age"), data.get("book"), data.get("remark"))
+			return ServerResultJson.success(user)
 		}
-		
-		@GetMapping("/search/{page}/{size}/{q}")
-		Page<Book> getByPages(@PathVariable Integer page, @PathVariable Integer size, @PathVariable String q){
-			BoolQueryBuilder builder = QueryBuilders.boolQuery()
-			builder.must(QueryBuilders.matchQuery("message", q))
-			Page<Book> pageList = bookService.search(builder, new PageRequest(page, size))
-			return pageList
-		}
+	//	
+	//	@GetMapping("/search/{page}/{size}/{q}")
+	//	Page<Book> getByPages(@PathVariable Integer page, @PathVariable Integer size, @PathVariable String q){
+	//		BoolQueryBuilder builder = QueryBuilders.boolQuery()
+	//		builder.must(QueryBuilders.matchQuery("message", q))
+	//		Page<Book> pageList = bookService.search(builder, new PageRequest(page, size))
+	//		return pageList
+	//	}
 		
 	}
 ```

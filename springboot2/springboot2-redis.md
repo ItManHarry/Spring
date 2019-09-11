@@ -1,5 +1,83 @@
 # Spring Boot2
 
+## Linux安装Redis
+
+- 下载源码，解压缩
+
+	wget http://download.redis.io/release/redis-5.0.3.tar.gz
+	
+	tar -zxvf redis-5.0.3.tar.gz
+	
+	cd redis-5.0.3
+	
+- 进入src目录，编译安装
+
+	make编译操作	
+		注意：
+			1 . make编译需要C语言编译器gcc的支持，如有没有，需要安装gcc。可以使用rpm -q gcc查看是否安装，如果没有安装，使用yum -y install gcc进行安装；
+			2 . 如果编译出错，请使用make clean清除临时文件之后，找到出错原因，解决问题后再重新安装）
+	
+	cd src
+	make install
+	
+- 比较重要的三个可执行文件
+
+	1 . redis-server : Redis服务器程序
+	
+	2 . redis-cli ：Redis客户端程序
+	
+	3 . redis-benchmark : Redis性能测试工具，测试Redis在系统及配置下的读写性能
+	
+- 编译完成后， 在src目录下，将以下四个文件拷贝到一个目录下(mkdir /usr/redis)
+
+	cp redis-server/redis-cli/redis-benchmark/../redis.conf /usr/redis
+	
+- 启动Redis服务
+
+	redis-server redis.conf
+	
+- 开机启动Redis
+
+	1. 进入redis下的utils文件夹
+	
+		cd /usr/redis/utils
+		
+	2. 打开并编辑redis_init_script
+	
+		vi redis_init_script
+		
+	3. 将以下配置改成实际的路径
+	
+		EXEC=/usr/redis/redis-server
+		CLIEXEC=/usr/redis/redis-cli
+		CONF="/usr/redis/redis.conf"
+		
+		注意：PIDFILE先去/var/run下看看有没有redis打头的pdi文件，没有的话先去redis-x.x.x/src下执行“./redis-server ../redis.conf”,手动执行redis，pid文件就会生成
+		
+	4. 将redis_init_script拷贝到/etc/init.d目录下，修改名称为redis
+	
+		cp redis_init_script /etc/init.d/
+		cd /etc/init.d/
+		mv redis_init_script redis
+	
+	5. 修改读写权限
+	
+		chmod +x /etc/init.d/redis
+		
+	6. 测试启动停止redis
+		
+			service redis start
+			
+			service redis stop
+			
+	7. 开机自启动
+	
+		chkconfig redis on
+		
+	8. 加入开机自启动
+	
+		chkconfig --add redis
+
 ## SpringBoot集成redis
 
 - pom.xml引入redis&pool2包
