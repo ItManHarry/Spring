@@ -256,3 +256,136 @@
 ```
 
 - 启动类增加@EnableEurekaClient注解启动客户端
+
+- 使用Eureka获取微服务
+
+```java
+	package com.doosan.ms.movie.controller;
+	import java.util.List;
+	import org.springframework.beans.factory.annotation.Autowired;
+	import org.springframework.cloud.client.ServiceInstance;
+	import org.springframework.cloud.client.discovery.DiscoveryClient;
+	import org.springframework.web.bind.annotation.PostMapping;
+	import org.springframework.web.bind.annotation.RequestMapping;
+	import org.springframework.web.bind.annotation.RestController;
+	import org.springframework.web.client.RestTemplate;
+	import com.doosan.ms.movie.pojo.User;
+	@RequestMapping("/movie")
+	@RestController
+	public class MovieController {
+		
+		@Autowired	
+		private RestTemplate restTemplate;
+		@Autowired
+		private DiscoveryClient discoveryClient;
+		/**
+		 * restTemplate way
+		 * @return
+		 */
+		@PostMapping("/order")
+		public String order() {
+			//模拟当前用户
+			Integer id = 1;
+			//远程调用用户微服务
+			User user = restTemplate.getForObject("http://localhost:9001/user/find/"+id, User.class);
+			
+			//调用用户微服，获取用户具体信息
+			System.out.println(user.getName() + " is buying the movie tickets...");
+			
+			return "Sale successfully";
+		}
+		
+		/**
+		 * Eureka way
+		 * @return
+		 */
+		@PostMapping("/sale")
+		public String sale() {
+			//模拟当前用户
+			Integer id = 1;
+			//获取Eureka中的用户微服务 - 根据名称获取
+			List<ServiceInstance> instances = discoveryClient.getInstances("microservice-user");
+			//如果没有负载均衡，只能获取一个服务器
+			ServiceInstance instance = instances.get(0);
+			User user = restTemplate.getForObject("http://"+instance.getHost()+":"+instance.getPort()+"/user/find/"+id, User.class);
+			//调用用户微服，获取用户具体信息
+			System.out.println(user.getName() + " is buying the movie tickets...(Use eureka to get the serivce infomation)");
+			return "Sale successfully";
+		}
+	}
+```
+
+## 搭建高可用Eureka Server
+
+- Eureka服务端application.properties配置更改 - 服务端
+
+	- Server1
+
+```
+	server.port=8888
+	spring.application.name=eureka-server-1
+	eureka.client.fetch-registry=true						#单机版为false
+	eureka.client.register-with-eureka=true		#单机版位false
+	#register url
+	eureka.client.service-url.defaultZone=http://127.0.0.1:9999/eureka #把本服务注册到其他服务中
+```
+
+	- Server2
+
+```
+	server.port=9999
+	spring.application.name=eureka-server-2
+	eureka.client.fetch-registry=true						#单机版为false
+	eureka.client.register-with-eureka=true		#单机版位false
+	#register url
+	eureka.client.service-url.defaultZone=http://127.0.0.1:8888/eureka #把本服务注册到其他服务中
+```
+
+- Eureka服务端application.properties配置更改 - 客户端
+
+```
+	eureka.client.fetch-registry=true
+	eureka.client.register-with-eureka=true
+	eureka.client.service-url.defaultZone=http://10.40.123.215:8888/eureka,http://10.40.123.215:9999/eureka	#配置多个Eureka服务端
+	eureka.instance.prefer-ip-address=true
+````
+
+- 启动Eureka及各个微服务。
+
+
+## Eureka配置详解
+
+- 服务提供方
+
+	1. 服务注册：
+		
+		eureka.client.register-with-eureka=true
+	
+	2. 服务续约：在注册服务完成后，服务提供者会定时想EurekaServer发起Rest请求，告诉EurekaServer：“我还活着”。这个我们称之为服务续约（renew）心跳，续约参数：
+	
+		eureka.instance.lease-expiration-duration-in-seconds=30	#服务失效时间，默认90秒
+		eureka.instance.lease-renewal-interval-in-seconds=10			#续约间隔时间，默认30秒
+		
+- 服务调用方
+
+	1. 获取服务注册信息：
+		
+		eureka.client.fetch-registry=true
+		
+	2. 默认30秒重新获取并更新注册信息。
+	
+		eureka.client.registry-fetch-interval-seconds=5
+		
+## Eureka Server失效剔除与自我保护
+
+- 失效剔除
+
+	默认情况下，Eureka Server每隔60秒对失效的服务（超过90秒未续约的服务）进行剔除，以下参数可以修改剔除时间：
+	
+	eureka.server.eviction-interval-timer-in-ms		#修改扫描失效服务间隔时间（单位是毫秒）
+	eureka.server.enable-self-preservation:false		#取消自我保护（默认是true）
+	
+- 自我保护
+
+	Eureka会统计15分钟心跳失败的服务实例的比例是否超过了15%。在生产环境下，因为网络延时原因，心跳失败实例的比例很可能超标，但是此时就把服务剔除并不妥当，
+	因为服务可能没有宕机。Eureka就会把当前实例的注册信息保护起来，不予剔除。生产环境下非常有效，保证了大多数服务依然可用。
