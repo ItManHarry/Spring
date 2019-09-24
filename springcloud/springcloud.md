@@ -389,3 +389,66 @@
 
 	Eureka会统计15分钟心跳失败的服务实例的比例是否超过了15%。在生产环境下，因为网络延时原因，心跳失败实例的比例很可能超标，但是此时就把服务剔除并不妥当，
 	因为服务可能没有宕机。Eureka就会把当前实例的注册信息保护起来，不予剔除。生产环境下非常有效，保证了大多数服务依然可用。
+	
+	
+## Spring Cloud 服务调用与负载均衡
+
+- Ribbon组件
+
+	Ribbon是Netflix发布的负载均衡器，它有助于控制HTTP和TCP客户端的行为。为Ribbon配置服务提供者地址列表后，Ribbon就可以基于某种负载均衡算法，自动地帮助服务消费者去请求。
+	Ribbon默认为我们提供了很多的负载均衡算法，例如轮询、随机等。我们也可以实现自定义的负载均衡算法。
+
+- 方式一：RestTemplate + Ribbon
+
+```java
+	/**
+	 * Eureka way-使用Ribbon负载均衡
+	 * @return
+	 */
+	//注入负载均衡客户端
+	@Autowired
+	private LoadBalancerClient loadBalancerClient;
+	@PostMapping("/buy")
+	public String buy() {
+		//模拟当前用户
+		Integer id = 1;
+		//使用Ribbon选择合适的服务实例
+		ServiceInstance instance = loadBalancerClient.choose("microservice-user");
+		User user = restTemplate.getForObject("http://"+instance.getHost()+":"+instance.getPort()+"/user/find/"+id, User.class);
+		//使用简化版-前提是启动类在RrestTemplate初始化的时候增加@LoadBalanced注解
+		//User user = restTemplate.getForObject("http://microservice-user/user/find/"+id, User.class);
+		//调用用户微服，获取用户具体信息
+		System.out.println(user.getName() + " is buying the movie tickets...(Use eureka to get the serivce infomation)");
+		return "Sale successfully";
+	}
+	
+	
+	package com.doosan.ms.movie;
+	import org.springframework.boot.SpringApplication;
+	import org.springframework.boot.autoconfigure.SpringBootApplication;
+	import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+	import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+	import org.springframework.context.annotation.Bean;
+	import org.springframework.web.client.RestTemplate;
+	@SpringBootApplication
+	@EnableEurekaClient
+	public class MicroServiceMovieApplication {
+		
+		public static void main(String[] args) {
+			SpringApplication.run(MicroServiceMovieApplication.class, args);
+		}
+		
+		/**
+		 * 初始化RestTemplate
+		 * @return
+		 */
+		@Bean
+		@LoadBalanced
+		public RestTemplate restTemplate(){
+			return new RestTemplate();
+		}
+	}
+```
+
+- 方式二：OpenFeign + 内置Ribbon（推荐使用，简单易用）
+
