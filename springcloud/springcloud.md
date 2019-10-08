@@ -538,3 +538,100 @@
 		return "Get ticket successfully";
 	}
 ```
+
+## 熔断器
+
+- 雪崩效应 
+
+	在微服务架构中通常会有多个服务调用，基础服务的故障可能会导致级联故障，进而造成整个系统不可用的情况，这种现象被称之为雪崩效应。服务雪崩效应是一种因“服务提供者”的不
+	可用导致“服务消费者”不可用，并将不可用逐渐放大的过程。
+	
+- 熔断器 - Hystrix
+
+	Hystrix是Netflix开源的一个延迟和容错库，用于隔离访问远程服务、第三方库、防止出现级联失败（雪崩效应），放于调用方使用。
+	
+- Ribbon整合Hystrix
+	
+	- 在微服务调用方导入hystrix依赖
+	
+```xml
+	<!-- 导入Hystrix -->
+  	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-starter-starter-netflix-hystrix</artifactId>
+  	</dependency>
+```
+
+	
+	- 使用@HystrixCommand声明fallback方法(声明位置：服务调用方法)
+	
+```java
+	@PostMapping("/buy")
+	@HystrixCommand(fallbackMethod =  "fallback")
+	public String buy() {
+		//模拟当前用户
+		Integer id = 1;
+		//使用Ribbon选择合适的服务实例
+//		ServiceInstance instance = loadBalancerClient.choose("microservice-user");
+//		User user = restTemplate.getForObject("http://"+instance.getHost()+":"+instance.getPort()+"/user/find/"+id, User.class);
+		//使用简化版(地址栏直接使用微服名称)-前提是启动类在RrestTemplate初始化的时候增加@LoadBalanced注解
+		User user = restTemplate.getForObject("http://microservice-user/user/find/"+id, User.class);
+		//调用用户微服，获取用户具体信息
+		System.out.println(user.getName() + " is buying the movie tickets...(Use eureka to get the serivce infomation)");
+		return "Sale successfully";
+	}
+```
+	
+	- 编写fallback方法逻辑
+	
+```java
+	/**
+	 * 熔断器回滚方法
+	 */
+	public String fallback() {
+		return "Service can not be used!";
+	}
+```
+	
+	- 在启动类添加@EnableHystrix注解
+	
+```java
+	package com.doosan.ms.movie;
+	import org.springframework.boot.SpringApplication;
+	import org.springframework.boot.autoconfigure.SpringBootApplication;
+	import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+	import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+	import org.springframework.cloud.netflix.hystrix.EnableHystrix;
+	import org.springframework.cloud.openfeign.EnableFeignClients;
+	import org.springframework.context.annotation.Bean;
+	import org.springframework.web.client.RestTemplate;
+	@SpringBootApplication
+	@EnableEurekaClient
+	@EnableFeignClients
+	@EnableHystrix
+	public class MicroServiceMovieApplication {
+		
+		public static void main(String[] args) {
+			SpringApplication.run(MicroServiceMovieApplication.class, args);
+		}
+		
+		/**
+		 * 初始化RestTemplate
+		 * @return
+		 */
+		@Bean
+		@LoadBalanced
+		public RestTemplate restTemplate(){
+			return new RestTemplate();
+		}
+	}
+```
+	
+	
+
+
+- OpenFeign整合Hystrix
+
+- 搭建Hystrix监控服务
+
+- 使用Hystrix监控服务消费者情况
