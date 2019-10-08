@@ -400,6 +400,8 @@
 
 - 方式一：RestTemplate + Ribbon
 
+- 示例代码
+
 ```java
 	/**
 	 * Eureka way-使用Ribbon负载均衡
@@ -449,6 +451,90 @@
 		}
 	}
 ```
+- 修改负载均衡算法,修改配置文件application.properties
+
+```
+	serviceID(对应的服务名).ribbon.NFLocalBalanceRuleClassName=com.netflix.loadbalancer.RandomRule
+```
 
 - 方式二：OpenFeign + 内置Ribbon（推荐使用，简单易用）
 
+- 导入OpenFeign包
+
+```xml
+	<!-- 导入OpenFeign -->
+  	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-starter-openfeign</artifactId>
+  	</dependency>
+```
+- 编写代理接口(代理商接口使用@FeignClient指明调用的服务名)
+
+```java
+	package com.doosan.ms.movie.ofs;
+	import org.springframework.cloud.openfeign.FeignClient;
+	import org.springframework.web.bind.annotation.GetMapping;
+	import org.springframework.web.bind.annotation.PathVariable;
+	import com.doosan.ms.movie.pojo.User;
+	/**
+	 * 注意事项
+	 * 1.使用@FeignClient注解
+	 * 2.检查@GetMapping的路径是否完整
+	 * 3.@PathVariable的value一定不能省略
+	 * @author 20112004
+	 *
+	 */
+	@FeignClient("microservice-user")
+	public interface UserServiceInf {
+		
+		@GetMapping("/user/find/{id}")
+		public User getUserById(@PathVariable("id") Integer id) ;
+	}
+```
+
+- 开启OpenFeign客户端
+
+```java
+	package com.doosan.ms.movie;
+	import org.springframework.boot.SpringApplication;
+	import org.springframework.boot.autoconfigure.SpringBootApplication;
+	import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+	import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+	import org.springframework.cloud.openfeign.EnableFeignClients;
+	import org.springframework.context.annotation.Bean;
+	import org.springframework.web.client.RestTemplate;
+	@SpringBootApplication
+	@EnableEurekaClient
+	@EnableFeignClients //开启OpenFeign客户端
+	public class MicroServiceMovieApplication {
+		
+		public static void main(String[] args) {
+			SpringApplication.run(MicroServiceMovieApplication.class, args);
+		}
+		
+		/**
+		 * 初始化RestTemplate
+		 * @return
+		 */
+		@Bean
+		@LoadBalanced
+		public RestTemplate restTemplate(){
+			return new RestTemplate();
+		}
+	}
+```
+
+- 调用代码
+
+```java
+	@Autowired
+	private UserServiceInf usi;
+	@PostMapping("/get")
+	public String getTicket() {
+		Integer id = 1;
+		User user = usi.getUserById(id);
+		//调用用户微服，获取用户具体信息
+		System.out.println(user.getName() + " is buying the movie tickets...(Use OpenFeign to get the serivce infomation)");
+		return "Get ticket successfully";
+	}
+```
