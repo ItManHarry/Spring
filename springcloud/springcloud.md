@@ -632,6 +632,191 @@
 
 - OpenFeign整合Hystrix
 
+	- 打开OpenFeign的Hystrix开关，修改application.properties配置文件
+	
+```
+	feign.hystrix.enabled=true
+```
+	
+	- 编写fallback处理类(实现熔断器接口)
+	
+```java
+	package com.doosan.ms.movie.ofs.hystrix;
+	import org.springframework.stereotype.Component;
+	import com.doosan.ms.movie.ofs.UserServiceInf;
+	import com.doosan.ms.movie.pojo.User;
+	/**
+	 * Feign熔断器类
+	 * @author 20112004
+	 *
+	 */
+	@Component
+	public class UserServiceFallback implements UserServiceInf{
+
+		@Override
+		public User getUserById(Integer id) {
+			System.out.println("UserService Hystrix...");
+			return null;
+		}
+
+	}
+```
+	
+	- 在FeignClient接口中指定对应的实现类
+	
+```java
+	package com.doosan.ms.movie.ofs;
+	import org.springframework.cloud.openfeign.FeignClient;
+	import org.springframework.web.bind.annotation.GetMapping;
+	import org.springframework.web.bind.annotation.PathVariable;
+	import com.doosan.ms.movie.ofs.hystrix.UserServiceFallback;
+	import com.doosan.ms.movie.pojo.User;
+	/**
+	 * 注意事项
+	 * 1.使用@FeignClient注解
+	 * 2.检查@GetMapping的路径是否完整
+	 * 3.@PathVariable的value一定不能省略
+	 * @author 20112004
+	 *
+	 */
+	@FeignClient(value = "microservice-user", fallback = UserServiceFallback.class)
+	public interface UserServiceInf {
+		
+		@GetMapping("/user/find/{id}")
+		public User getUserById(@PathVariable("id") Integer id) ;
+	}
+```
+	
 - 搭建Hystrix监控服务
 
+	- 搭建Hystrix Dashboard工程(新建microservice)
+	
+		1. 导入Hystrix Dashboard的依赖
+		
+```xml
+	<!-- 导入Hystrix -->
+  	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+  	</dependency>
+  	<!-- 导入Hystrix Dashboard -->
+  	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-starter-netflix-hystrix-dashboard</artifactId>
+  	</dependency>
+  	<!-- 导入web依赖 -->
+  	<dependency>
+  		<groupId>org.springframework.boot</groupId>
+  		<artifactId>spring-boot-starter-actuator</artifactId>
+  	</dependency>
+```
+		
+		2. 启动类添加@EnableHystrixDashboard注解
+		
+```java
+	package com.doosan.ms.hystrix;
+	import org.springframework.boot.SpringApplication;
+	import org.springframework.boot.autoconfigure.SpringBootApplication;
+	import org.springframework.cloud.netflix.hystrix.dashboard.EnableHystrixDashboard;
+	@SpringBootApplication
+	@EnableHystrixDashboard
+	public class HystrixServerApplication {
+		
+		public static void main(String[] args) {
+			SpringApplication.run(HystrixServerApplication.class, args);
+		}
+		
+	}
+````
+
+	- 启动工程，访问URL：
+	
+	http://localhost:1111/hystrix		
+
 - 使用Hystrix监控服务消费者情况
+
+	- 在服务消费方的启动类，添加监听方法的Servlet
+	
+```java
+	package com.doosan.ms.movie;
+	import org.springframework.boot.SpringApplication;
+	import org.springframework.boot.autoconfigure.SpringBootApplication;
+	import org.springframework.boot.web.servlet.ServletRegistrationBean;
+	import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+	import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+	import org.springframework.cloud.netflix.hystrix.EnableHystrix;
+	import org.springframework.cloud.openfeign.EnableFeignClients;
+	import org.springframework.context.annotation.Bean;
+	import org.springframework.web.client.RestTemplate;
+
+	import com.netflix.hystrix.contrib.metrics.eventstream.HystrixMetricsStreamServlet;
+	@SpringBootApplication
+	@EnableEurekaClient
+	@EnableFeignClients
+	@EnableHystrix
+	public class MicroServiceMovieApplication {
+		
+		public static void main(String[] args) {
+			SpringApplication.run(MicroServiceMovieApplication.class, args);
+		}
+		
+		/**
+		 * 初始化RestTemplate
+		 * @return
+		 */
+		@Bean
+		@LoadBalanced
+		public RestTemplate restTemplate(){
+			return new RestTemplate();
+		}
+		
+		@Bean
+		public ServletRegistrationBean getServlet() {
+			HystrixMetricsStreamServlet servlet = new HystrixMetricsStreamServlet();
+			@SuppressWarnings("unchecked")
+			ServletRegistrationBean registration = new ServletRegistrationBean(servlet);
+			registration.setLoadOnStartup(1);
+			registration.addUrlMappings("/hystrix.stream");
+			registration.setName("HystrixMetricsStreamServlet");
+			return registration;
+		}
+	}
+```
+
+	- 在Dashboard网址中输入以下监控地址：
+	
+		http://localhost:9002/hystrix.stream
+		
+## SpringCloud 网关
+
+- 为什么需要网关（API Gateway）
+
+	在微服务架构中，后端服务往往不直接开放给调用端，而是通过一个API网关根据请求的URL路由到相应的服务。
+	
+	1. 权限校验
+	
+	2. 负载均衡
+	
+- SpringCloud Zuul
+
+	SpringCloud Zuul路由是微服务架构不可缺少的一部分，提供动态路由、监控、弹性、安全等边缘服务。
+	
+	Zuul的核心是一系列的过滤器，可以完成以下功能：
+	
+	1. 身份认证与安全
+	
+	2. 审查与监控
+	
+	3. 动态路由
+	
+	4. 压力测试
+	
+	5. 负责分配
+	
+	6. 静态响应处理
+	
+	7. 多区域弹性
+	
+	SpringCloud对Zuul进行了整合与增强。目前，Zuul默认使用的HTTP客户端是Apache HTTP Client，也可以使用RestClient或者OKHTTP3.0.
+	如果要使用RestClient，可以设置：ribbon.restclient.enabled=true;
+	如果要使用OKHTTP3.0，可以设置：ribbon.okhttp.enabled=true;
