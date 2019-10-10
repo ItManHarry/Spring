@@ -866,3 +866,21 @@
 原因是springboot和springcloud的版本不符导致，springboot&springcloud版本对应参照：https://www.cnblogs.com/zhuwenjoyce/p/10261079.html
 
 - Zuul网关负载均衡： Zuul负载均衡默认使用的也是Ribbon，默认策略也是轮询
+
+- Zuul过滤器 - 方法说明
+
+	1. filterType ： 该函数需要返回一个字符串来代表过滤器的类型，而这个类型就是在HTTP请求过程中定义的各个阶段。在Zuul中默认定义了四个不同的类型，具体如下：
+	
+		1.1. pre： 可以在请求被路由之前调用
+		
+		1.2. route：在路由请求时候调用
+		
+		1.3. post： 在routing和error过滤器之后被调用
+		
+		1.4. error： 处理请求发生错误是调用
+		
+	2. filterOrder：通过int值来定义过滤器执行的顺序，值越小优先级越高
+	
+	3. shouldFilter： 返回一个boolean类型来判断该过滤器是否要执行，可以通过该方法来指定过滤器的有效范围
+	
+	4. run： 过滤器的具体逻辑。我们可以实现自定义的过滤逻辑，来确定是否要拦截当前的请求，不对其进行后续的路由，或是在请求路由返回结果之后，对处理结果做一些加工。
