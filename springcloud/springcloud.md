@@ -149,7 +149,7 @@
 				<dependency>
 					<groupId>org.springframework.cloud</groupId>
 					<artifactId>spring-cloud-dependencies</artifactId>
-					<version>Finchley.M9</version>
+					<version>Greenwich.SR2</version>
 					<type>pom</type>
 					<scope>import</scope>
 				</dependency>
@@ -820,3 +820,49 @@
 	SpringCloud对Zuul进行了整合与增强。目前，Zuul默认使用的HTTP客户端是Apache HTTP Client，也可以使用RestClient或者OKHTTP3.0.
 	如果要使用RestClient，可以设置：ribbon.restclient.enabled=true;
 	如果要使用OKHTTP3.0，可以设置：ribbon.okhttp.enabled=true;
+	
+- 配置Zuul网关动态路由
+
+	1. 创建独立的网关微服务模块：api-gateway
+	
+	2. 导入Zuul和Eureka的依赖(网关本身也要注册到Eureka) - pom.xml
+	
+```xml
+	<!-- 导入Eureka客户端 -->
+	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+  	</dependency>
+  	<!-- 导入Zuul -->
+	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+  	</dependency>
+```
+	
+	3. 启动类添加@EnableZuulProxy注解
+	
+```java
+		
+```
+	
+	4. 配置Zuul路由规则（application.properties）
+
+```
+	server.port=2222
+	spring.application.name=microservice-gateway
+	eureka.client.fetch-registry=true
+	eureka.client.register-with-eureka=true
+	eureka.client.service-url.defaultZone=http://10.40.123.215:8888/eureka,http://10.40.123.215:9999/eureka
+	eureka.instance.prefer-ip-address=true
+	#注：如果转发的路径(path)和转发的服务名称(serivceId)是一致的话，可以省略zuul的路由配置
+	zuul.routes.microservice-user.path=/microservice-user
+	zuul.routes.microservice-user.serviceId=microservice-user
+	zuul.routes.microservice-movie.path=/microservice-movie
+	zuul.routes.microservice-movie.serviceId=microservice-movie
+```
+
+注意：zuul网关工程启动报错“The bean 'proxyRequestHelper', defined in class path resource [org/springframework/cloud/netflix/zuul/ZuulProxyAutoConfiguration$NoActuatorConfiguration.class], could not be registered. A bean with that name has already been defined in class path resource”，
+原因是springboot和springcloud的版本不符导致，springboot&springcloud版本对应参照：https://www.cnblogs.com/zhuwenjoyce/p/10261079.html
+
+- Zuul网关负载均衡： Zuul负载均衡默认使用的也是Ribbon，默认策略也是轮询
