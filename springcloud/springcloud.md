@@ -884,3 +884,187 @@
 	3. shouldFilter： 返回一个boolean类型来判断该过滤器是否要执行，可以通过该方法来指定过滤器的有效范围
 	
 	4. run： 过滤器的具体逻辑。我们可以实现自定义的过滤逻辑，来确定是否要拦截当前的请求，不对其进行后续的路由，或是在请求路由返回结果之后，对处理结果做一些加工。
+	
+- zuul自定义异常处理
+
+	1. 配置Zuul默认的异常处理器失效(配置application.properties)
+	
+```
+	zuul.SendErrorFilter.error.disable=true
+```
+
+	2. 编写自定义异常处理类型
+	
+		2.1. 处理结果result
+```java
+	package com.doosan.ms.gateway.filters.result;
+	import java.io.Serializable;
+
+	public class FilterResult implements Serializable {
+
+		private static final long serialVersionUID = -7196773410439546025L;
+		private boolean flag;
+		private String message;
+		
+		public FilterResult() {}
+		
+		public FilterResult(boolean flag, String message) {
+			super();
+			this.flag = flag;
+			this.message = message;
+		}
+		
+		public boolean isFlag() {
+			return flag;
+		}
+		public void setFlag(boolean flag) {
+			this.flag = flag;
+		}
+		public String getMessage() {
+			return message;
+		}
+		public void setMessage(String message) {
+			this.message = message;
+		}
+	}	
+````
+	
+	2.2. 处理过滤器
+	
+```java
+	package com.doosan.ms.gateway.filters;
+	import javax.servlet.http.HttpServletResponse;
+	import org.springframework.cloud.netflix.zuul.filters.support.FilterConstants;
+	import org.springframework.stereotype.Component;
+	import com.doosan.ms.gateway.filters.result.FilterResult;
+	import com.fasterxml.jackson.core.JsonProcessingException;
+	import com.fasterxml.jackson.databind.ObjectMapper;
+	import com.netflix.zuul.ZuulFilter;
+	import com.netflix.zuul.context.RequestContext;
+	import com.netflix.zuul.exception.ZuulException;
+	@Component
+	public class SystemErrorFilter extends ZuulFilter {
+
+		@Override
+		public boolean shouldFilter() {
+			// TODO Auto-generated method stub
+			return true;
+		}
+
+		@Override
+		public Object run() throws ZuulException {
+			System.out.println("Do the error exception...");
+			//捕获异常信息
+			RequestContext context = RequestContext.getCurrentContext();
+			HttpServletResponse response = context.getResponse();
+			ZuulException exception = (ZuulException)context.get("throwable");
+			FilterResult result = new FilterResult(false, exception.getMessage());
+			ObjectMapper om = new ObjectMapper();
+			try {
+				String json = om.writeValueAsString(result);
+				response.setContentType("text/json;charset=utf-8");
+				response.getWriter().write(json);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}		
+			return null;
+		}
+
+		@Override
+		public String filterType() {
+			// TODO Auto-generated method stub
+			return FilterConstants.ERROR_TYPE;
+		}
+
+		@Override
+		public int filterOrder() {
+			// TODO Auto-generated method stub
+			return 1;
+		}
+	}
+```
+
+- zuul整合Swagger2
+
+	1. 导入swagger2依赖
+	
+```xml
+	<!-- 导入Swagger2 -->
+  	<dependency>
+  		<groupId>io.springfox</groupId>
+  		<artifactId>springfox-swagger2</artifactId>
+  		<version>2.8.0</version>	
+  	</dependency>
+  	<dependency>
+  		<groupId>io.springfox</groupId>
+  		<artifactId>springfox-swagger-ui</artifactId>
+  		<version>2.8.0</version>	
+  	</dependency> 
+```
+
+	2. 编写组件（和启动类在同一路径下）
+	
+```java
+	package com.doosan.ms.gateway;
+	import java.util.ArrayList;
+	import java.util.List;
+	import org.springframework.cloud.netflix.zuul.filters.Route;
+	import org.springframework.cloud.netflix.zuul.filters.RouteLocator;
+	import org.springframework.context.annotation.Primary;
+	import org.springframework.stereotype.Component;
+	import springfox.documentation.swagger.web.SwaggerResource;
+	import springfox.documentation.swagger.web.SwaggerResourcesProvider;
+	@Component
+	@Primary
+	public class DocumentationConfig implements SwaggerResourcesProvider{
+		
+		private final RouteLocator routeLocator;
+		
+		public DocumentationConfig(RouteLocator routeLocator) {
+			this.routeLocator = routeLocator;
+		}
+
+		@Override
+		public List<SwaggerResource> get() {
+			List<SwaggerResource> resouces = new ArrayList<SwaggerResource>();
+			List<Route> routes = routeLocator.getRoutes();
+			routes.forEach(route -> {
+				resouces.add(swaggerResource(route.getId(), route.getFullPath().replace("**", "v2/api-docs"), "2.0"));
+			});
+			return null;
+		}
+		
+		private SwaggerResource swaggerResource(String name, String location, String version) {
+			SwaggerResource swaggerResource = new SwaggerResource();
+			swaggerResource.setName(name);
+			swaggerResource.setLocation(location);
+			swaggerResource.setSwaggerVersion(version);
+			return swaggerResource;
+		}
+	}
+```
+
+	3. 启动类开启swagger功能
+	
+```java
+	package com.doosan.ms.gateway;
+	import org.springframework.boot.SpringApplication;
+	import org.springframework.boot.autoconfigure.SpringBootApplication;
+	import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
+	import springfox.documentation.swagger2.annotations.EnableSwagger2;
+	@SpringBootApplication
+	@EnableZuulProxy	//启用Zuul网关代理功能
+	@EnableSwagger2		//开启Swagger2功能
+	public class MicroServiceGatewayApplication {
+		
+		public static void main(String[] args) {
+			SpringApplication.run(MicroServiceGatewayApplication.class, args);
+		}
+	}
+
+```
+
+	4. 登录网址验证：
+	
+		http://127.0.0.1:2222/swagger-ui.html
