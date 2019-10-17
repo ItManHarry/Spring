@@ -1068,3 +1068,102 @@
 	4. 登录网址验证：
 	
 		http://127.0.0.1:2222/swagger-ui.html
+		
+## SpringCloudConfig配置中心
+
+- 构筑config微服务
+
+	1. 引入config依赖(pom.xml)
+	
+```
+	<!-- 导入Configuration服务端 -->
+	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-config-server</artifactId>
+  	</dependency>
+```
+
+	2. 配置连接属性application.properties
+	
+```
+	server.port=1001
+	spring.application.name=microservice-config
+	spring.cloud.config.server.git.uri=https://github.com/ItManHarry/config.git
+```
+
+	3. 编写启动类
+	
+```java
+	package com.doosan.ms.config;
+	import org.springframework.boot.SpringApplication;
+	import org.springframework.boot.autoconfigure.SpringBootApplication;
+	import org.springframework.cloud.config.server.EnableConfigServer;
+	@SpringBootApplication
+	@EnableConfigServer
+	public class MicroServiceConfigApplication {
+		
+		public static void main(String[] args) {
+			SpringApplication.run(MicroServiceConfigApplication.class, args);
+		}
+	}
+```
+
+- config客户端
+	
+	1. 引入config客户端依赖
+	
+```xml
+	<!-- 导入config客户端 -->
+	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-starter-config</artifactId>
+  	</dependency>
+```
+
+	2. 在resources下删除application.properties文件，新增bootstrap.properties文件，文件配置内容如下：
+	
+```
+	spring.cloud.config.uri=http://127.0.0.1:1001	#springcloud config服务端地址
+	spring.cloud.config.name=user								#配置文件前缀		
+	spring.cloud.config.profile=dev								#配置文件后缀
+	spring.cloud.config.label=master							#仓库分支名称
+```
+
+- 更改为svn
+
+	1. 服务端：
+	
+		1.1. 导入svn客户端依赖
+		
+```xml
+	<dependency>
+  		<groupId>org.tmatesofte.svnkit</groupId>
+  		<artifactId>svnkit</artifactId>
+		<version>1.8.10</version>
+  	</dependency>
+```
+	
+		1.2. 修改配置文件application.properties：
+	
+```
+	server.port=1001
+	spring.application.name=microservice-config
+	#spring.cloud.config.server.git.uri=https://github.com/ItManHarry/config.git
+	spring.profiles.active=subversion						#启用SVN
+	spring.cloud.config.server.svn.uri=https://10.40.128.191/svn/doosan-ms/	#SVN地址
+	spring.cloud.config.server.svn.name=doosanms													#SVN账号
+	spring.cloud.config.server.svn.password=doosanms											#SVN密码
+	spring.cloud.config.server.svn.default-label=trunk												#SVN路径
+```
+
+	2. 客户端，修改配置文件bootstrap.properties
+	
+```
+	spring.cloud.config.uri=http://127.0.0.1:1001
+	spring.cloud.config.name=movie
+	spring.cloud.config.profile=dev
+	spring.cloud.config.label=trunk
+```
+
+- 搭建高可用的配置中心框架
+
