@@ -1167,3 +1167,64 @@
 
 - 搭建高可用的配置中心框架
 
+	1. config要注册到Eureka
+	
+	2. 各个微服务启用自动发现配置功能(bootstrap.properties)
+
+```
+	spring.cloud.config.discovery.enabled=true
+	spring.cloud.config.discovery.service-id=microservice-config
+```
+
+- Spring Cloud Bus消息服务总线
+
+	1. 安装RabbitMQ
+	
+	2. 配置端导入RabiitMQ服务端
+	
+		2.1. 导入RabbitMQ依赖
+		
+```xml
+	<!-- 导入SpringConfigBus依赖 -->
+  	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-bus</artifactId>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-stream-binder-rabbit</artifactId>
+  	</dependency>
+```
+
+		2.2. 配置RabbitMQ(application.properties)
+		
+```
+	spring.rabbitmq.host=127.0.0.1
+	management.endpointes.web.exposure.include=bus-refresh
+```
+
+	3. 各个配置读取端配置RabbitMQ客户端
+	
+		31. 导入RabbitMQ依赖
+		
+```xml
+	<!-- 导入SpringCloudBus客户端 -->
+  	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-bus</artifactId>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-stream-binder-rabbit</artifactId>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-actuator</artifactId>
+  	</dependency>
+```
+
+		3.2. 在svn配置文件中增加配置RabbitMQ
+		
+```
+	spring.rabbitmq.host=127.0.0.1
+```
