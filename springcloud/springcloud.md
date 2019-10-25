@@ -489,6 +489,10 @@
 		
 		@GetMapping("/user/find/{id}")
 		public User getUserById(@PathVariable("id") Integer id) ;
+		@GetMapping("/hr/biz/department/getAll")
+		def getAll(@RequestParam("order") String order, @RequestParam("page") Integer page, @RequestParam("limit") Integer limit, @RequestParam("name") String name)
+		@GetMapping("/hr/biz/department/total")
+		def total()
 	}
 ```
 
