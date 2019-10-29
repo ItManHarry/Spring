@@ -1245,3 +1245,84 @@
 ```
 	spring.rabbitmq.host=127.0.0.1
 ```
+
+## SpringCloud分布式链路跟踪 - （sleuth + Zipkin）
+
+1. 微服中导入sleuth依赖
+
+```xml
+	<!-- 导入sleuth -->
+  	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-starter-sleuth</artifactId>
+  	</dependency>
+```
+
+2. 搭建Zipkin服务器
+
+- 新建一子工程 （ddic-zipkin-server）
+
+- 导入zipkin依赖
+
+```xml
+	<dependency>
+  		<groupId>io.zipkin.java</groupId>
+  		<artifactId>zipkin-server</artifactId>
+  		<version>2.9.4</version>
+  		<exclusions>
+  			<exclusion>
+  				<groupId>org.apache.logging.log4j</groupId>
+  				<artifactId>log4j-slf4j-impl</artifactId>
+  			</exclusion>
+  		</exclusions>
+  	</dependency>
+  	<dependency>
+  		<groupId>io.zipkin.java</groupId>
+  		<artifactId>zipkin-autoconfigure-ui</artifactId>
+  		<version>2.9.4</version>
+  	</dependency>
+```
+
+- 编写配置文件
+
+```
+	server.port=1003
+	spring.application.name=ddic-zipkin-server
+	management.metrics.web.server.auto-time-requests=false
+```
+
+- 编写启动类
+
+```groovy
+	package com.doosan.biz.ddic.zipkin
+	import org.springframework.context.ConfigurableApplicationContext
+	import zipkin.server.internal.EnableZipkinServer
+	import org.springframework.boot.SpringApplication
+	import org.springframework.boot.autoconfigure.SpringBootApplication
+	@SpringBootApplication
+	@EnableZipkinServer
+	class DdicZipkinServerApplication {
+		static void main(String[] args) {
+			ConfigurableApplicationContext context = SpringApplication.run(DdicZipkinServerApplication, args)
+		}
+	}
+```
+
+3. 微服注册到Zipkin
+
+- 导入zipkin依赖
+
+```xml
+	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-starter-zipkin</artifactId>
+  	</dependency>
+```
+
+- 配置zipkin服务端信息(application.properties)
+
+```
+	spring.zipkin.base-url=http://127.0.0.1:1003
+	spring.zipkin.sender.type=web
+	spring.sleuth.sampler.probability=1
+```
