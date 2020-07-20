@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!-- 新增修改目录信息 -->
+<html xmlns:th="http://www.thymeleaf.org">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<div th:fragment="catalog_edit()">
+		<div class = "row">
+			<div class = "col-sm-12">
+			  	<div class="form-group">
+			    	<label for="name">目录</label>
+			    	<input type="text" class="form-control" id="name" name = "name" v-model = "name" placeholder="">
+			  	</div>
+			  	<div class="form-group" v-if = "admin">
+			    	<label for="name">根目录</label>
+			    	<select class = "form-control" v-model = "parentYn">
+			    		<option v-for = "o in yn" :value = "o.value">{{o.view}}</option>
+			    	</select>
+			  	</div>
+			  	<div class="form-group">
+			  		<div class = "row">
+			  			<div class = "col-sm-12">
+			  				<label for="code">父目录</label>
+			  			</div>
+			  		</div>
+			  		<div class = "row">
+			  			<div class = "col-sm-10">
+			  				<input type="text" class="form-control" id="path" name = "path" v-model = "path" placeholder="" readonly>
+			  			</div>
+			  			<div class = "col-sm-2">
+			  				<button class = "btn btn-outline-secondary text-center btn-block" :disabled = "disabled" @click = "selectParent()"><i class="fa fa-folder-open" aria-hidden="true"></i></button>
+			  			</div>
+			  		</div>
+				 </div>
+				 <!--div class="form-group">   
+					<label for="code">最终目录</label>
+				    <select class = "form-control" id = "leaf" name = "leaf" v-model = "leaf" :disabled = "disabled">
+				    	<option v-for = "o in yn" :value = "o.value">{{o.view}}</option>
+				    </select>
+				 </div>
+				 <div class="form-group">
+					<label for="code">是否在用</label>
+				    <select class = "form-control" id = "status" name = "status" v-model = "status">
+				    	<option v-for = "o in yn" :value = "o.value">{{o.view}}</option>
+				    </select>
+				 </div-->
+			  	<input type = "hidden" v-model = "id" name = "id">
+				<p v-if = "show" class = "text-danger">{{result}}</p>
+			</div> 
+		</div>
+	</div>
+</html>

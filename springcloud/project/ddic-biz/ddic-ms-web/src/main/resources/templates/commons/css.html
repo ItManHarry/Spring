@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head th:fragment="common_css(title, links)">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<title th:replace="${title}"></title>
+		<link rel="shortcut icon" type="image/x-icon" th:href = "@{/static/images/logoes/way.ico}" media="screen" />
+		<link rel = "stylesheet" th:href = "@{/static/css/bootstrap.min.css}" media="screen"/>
+		<!-- fontawesome -->
+		<link rel = "stylesheet" th:href = "@{/static/css/font-awesome.min.css}" media="screen"/>
+		<link rel = "stylesheet" th:href = "@{/static/css/jquery-confirm.min.css}" media="screen"/>
+		<link rel = "stylesheet" th:href = "@{/static/css/system/all.css}" media="screen"/>
+		<!--/* Per-page placeholder for additional links */-->
+    	<th:block th:replace="${links}" />
+	</head>
+<body>
+</body>
+</html>

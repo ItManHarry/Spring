@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head th:replace="commons/css::common_css(~{::title}, ~{})">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<title>Department List Page</title>
+	</head>
+	<body>
+		<!-- 引入公共js文件 -->
+		<div th:replace="commons/js::common_js(~{::script})">
+			<!--加载页面自己的js-->
+		    <script type = "text/javascript" th:src = "@{/static/js/system/nav.js}" charset="UTF-8"></script>
+		</div>
+		<div class="container-fluid" id = "departmentdiv"> 
+			<!-- 引入公共nav文件 --> 
+			<div th:include="commons/nav::common_nav()"></div>
+			<div class = "row">
+				<div class = "col-sm-10 text-right">
+					<input type = "text" placeholder = "name..." v-model = "name" class = "form-control"/>
+				</div> 
+				<div class = "col-sm-2 text-right">
+				  	<button class="btn btn-outline-info btn-sm" type="button" @click = "doSearch"><i class="fa fa-search"></i>&nbsp;&nbsp;搜索</button>&nbsp;&nbsp;
+	                <a th:href = "@{~/web/biz/department/add}" class = "btn btn-outline-success btn-sm"><i class = "fa fa-plus"></i>&nbsp;&nbsp;新增</a>
+				</div> 
+			</div>
+			<br>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<div class="table-responsive-sm">
+						<table class = "table table-bordered table-hover table-sm" id = "list">
+							<!--caption>List of Departments</caption-->
+							<thead>
+								<tr class = "text-center">
+									<th width = "10%">#ID</th>
+									<th width = "25%">部门代码</th>
+									<th width = "25%">部门名称</th>
+									<th width = "30%">上级部门</th>
+									<th width = "10%">操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for = "data in datas" class = "text-center">
+									<td>{{data.id}}</td>
+									<td>{{data.code}}</td>
+									<td>{{data.name}}</td>
+									<td>{{data.parentid}}</td>
+									<!-- vue拼接超链接方式 -->
+									<td>
+										<button class = "btn btn-link"><i class = "fa fa-cogs"></i></button>
+									</td>
+									<!--td>
+										<a :href = "'/web/biz/department/update?id='+data.id" class = "btn btn-link btn-xs"><i class = "fas fa-edit"></i>&nbsp;&nbsp;编辑</a>&nbsp;&nbsp;
+										<a :href = "'/web/biz/department/move?id='+data.id" class = "btn btn-link btn-sm"><i class = "fas fa-trash-alt"></i>&nbsp;&nbsp;删除</a>
+									</td-->						
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<nav class="text-right">
+					    <ul class="pagination"></ul>
+					</nav>	
+				</div> 
+			</div>
+		</div>
+		<script>
+			var module = [[${module}]]
+			var vm = new Vue({
+				el:"#departmentdiv",
+				data:{
+					datas:[],
+					name:"",
+					total:[[${total}]]	//获取后台记录总数
+				},
+				methods:{
+					doSearch:function(){
+						getData(1, this.name);
+					}
+				},
+				created:function(){
+						
+				}
+			});
+			$(function(){
+				$('.pagination').bootstrapPaginator({
+		            bootstrapMajorVersion: 3, 				//对应bootstrap版本
+		            size: 'small', 							//分页大小
+		            currentPage: 1, 						//当前页
+		            numberOfPages: 10, 						//显示的条数
+		            totalPages: Math.ceil(vm.total / 10), 	//总页数
+		            /*
+		             *	分页点击事件
+		             * @param event [jquery对象]
+		             * @param originalEvent [dom原生对象]
+		             * @param type [按钮类型]
+		             * @param page [点击按钮对应的页码]
+		             */
+		            onPageClicked: function (event, originalEvent, type, page) {
+		               	getData(page,vm.name);
+		            }
+		        });
+				getData(1,"");			
+			})
+			/**
+			*获取数据
+			*/
+			function getData(page,name){
+				$.ajax({
+					url:"/web/biz/department/all",
+					type:"get",
+					data:{order:"name", page:page, limit:10, name:name},
+					dataType:"json",
+					success:function(r){
+						if(r.status == 200){
+							vm.total = r.number
+							//重新设置总页数
+							$('.pagination').bootstrapPaginator("setOptions", {
+								currentPage: page, 						//当前页
+								totalPages: Math.ceil(vm.total / 10), 	// 总页数
+							})
+							vm.datas = r.data
+						}
+					},
+					error:function(r){
+						alert(r.message)
+					}
+				})
+			}
+		</script>
+	</body>
+</html>

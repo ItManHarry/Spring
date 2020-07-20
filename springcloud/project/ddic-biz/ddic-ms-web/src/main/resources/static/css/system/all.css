@@ -1,0 +1,13 @@
+caption {
+	text-align: left;
+	caption-side: bottom;
+}
+.tooltip-inner{
+    background-color: #17a2b8;
+}
+.tooltip.top{
+    border-top-color: #17a2b8;
+}
+.tooltip-arrow{
+    border-top-color: #17a2b8;
+}

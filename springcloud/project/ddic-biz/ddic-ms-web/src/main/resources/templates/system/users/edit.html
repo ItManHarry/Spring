@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!-- 新增修改用户信息 -->
+<html xmlns:th="http://www.thymeleaf.org">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<div th:fragment="user_edit()">
+		<div class = "row">
+			<div class = "col-sm-12">
+				<form action = "/web/biz/company/modify" method = "post">
+					<div class="form-group">   
+						<label for="code">用户类型</label>
+					    <select class = "form-control" id = "ut" name = "ut" v-model = "ut">
+					    	<option v-for = "t in uts" :value = "t.value">{{t.view}}</option>
+					    </select>
+					</div>
+					<div class="form-group">
+						<label for="code">用户代码</label>
+					    <input type="text" class="form-control" id="code" name = "code" v-model = "code" placeholder="">
+					 </div>
+				  	<div class="form-group">
+				    	<label for="name">用户名称</label>
+				    	<input type="text" class="form-control" id="name" name = "name" v-model = "name" placeholder="">
+				  	</div>
+				  	<div class="form-group" v-if = "inputPwd">   
+						<label for="code">用户密码</label>
+					    <input type="password" class="form-control" id="pwd" name = "pwd" v-model = "pwd" placeholder="">
+					 </div>
+					 <div class="form-group">   
+						<label for="code">文档角色</label>
+					    <select class = "form-control" id = "dr" name = "dr" v-model = "dr">
+					    	<option v-for = "r in drs" :value = "r.value">{{r.view}}</option>
+					    </select>
+					 </div>
+				  	<input type = "hidden" v-model = "id" name = "id">
+				</form>
+				<p v-if = "show" class = "text-danger">{{result}}</p>
+			</div> 
+		</div>
+	</div>
+</html>

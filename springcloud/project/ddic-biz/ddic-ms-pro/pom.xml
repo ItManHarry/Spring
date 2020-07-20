@@ -1,0 +1,62 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.doosan.biz</groupId>
+    <artifactId>ddic</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>ddic-ms-pro</artifactId>
+  <name>ddic-ms-pro</name>
+  <description>ddic project management</description>
+  <dependencies>
+  	<!-- 导入公共类  -->
+  	<dependency>
+  		<groupId>com.doosan.biz</groupId>
+	    <artifactId>ddic-ms-common</artifactId>
+	    <version>0.0.1-SNAPSHOT</version>
+  	</dependency>
+  	<dependency>  
+	    <groupId>com.google.code.gson</groupId>  
+	    <artifactId>gson</artifactId>  
+	</dependency>  
+	<!-- 加载POI包 读写Excel -->
+	<dependency>
+	    <groupId>org.apache.poi</groupId>
+	    <artifactId>poi</artifactId>
+	    <version>3.16</version>
+	</dependency>
+	<dependency>
+	    <groupId>org.apache.poi</groupId>
+	    <artifactId>poi-ooxml</artifactId>
+	    <version>3.16</version>
+	</dependency>
+	<dependency>
+	    <groupId>org.apache.poi</groupId>
+	    <artifactId>poi-ooxml-schemas</artifactId>
+	    <version>3.16</version>
+	</dependency>
+	<!-- 导入mysql -->
+	<dependency>
+		<groupId>mysql</groupId>
+		<artifactId>mysql-connector-java</artifactId>
+		<scope>runtime</scope>
+	</dependency>
+	<!-- spring jpa -->
+  	<dependency>
+  		<groupId>org.springframework.boot</groupId>
+    	<artifactId>spring-boot-starter-data-jpa</artifactId>
+  	</dependency>
+  	<!-- 导入Eureka客户端 -->
+	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-starter-zipkin</artifactId>
+  	</dependency>
+  </dependencies>
+  <build>
+  	<finalName>ddic-ms-pro</finalName>
+  </build>
+</project>

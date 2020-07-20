@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!-- 字典枚举值维护 -->
+<html xmlns:th="http://www.thymeleaf.org">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<div th:fragment="dict_enum()">
+		<div class = "row">
+			<div class = "col-sm-12">
+			  <div class="row">
+			    <div class="col">
+			      <input type="text" class="form-control" id="value" name = "value" v-model = "value" placeholder="Value">
+			    </div>
+			    <div class="col">
+			      <input type="text" class="form-control" id="view" name = "view" v-model = "view" placeholder="View">
+			    </div>
+			    <div class = "col text-center">
+			    	<button class = "btn btn-outline-primary" @click = "saveEnum()"><i class = "fa fa-floppy-o"></i>&nbsp;&nbsp;{{saveBtn}}</button>&nbsp;&nbsp;
+			    	<button class = "btn btn-outline-secondary" @click = "clearEnum()"><i class="fa fa-undo"></i>&nbsp;&nbsp;清空</button>
+			    </div>
+			  </div><br>
+			  <input type = "hidden" v-model = "id" name = "id">	<!-- 字典ID -->
+			  <input type = "hidden" v-model = "eid" name = "eid">	<!-- 字典枚举ID -->
+			  <small v-if = "show" class = "text-danger">{{result}}</small>
+			</div> 
+		</div><br>
+		<div class = "row">
+			<div class = "col-sm-12">
+				<div class="table-responsive-sm">
+					<table class = "table table-bordered table-hover table-sm" id = "list">
+						<!--caption>系统字典枚举数据</caption-->
+						<thead>
+							<tr class = "text-center">
+								<th width = "50%">Value</th>
+								<th width = "50%">View</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for = "data in edatas" class = "text-center" @click = "modifyEnum(data.tid, data.value, data.view)">
+								<td>{{data.value}}</td>
+								<td>{{data.view}}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>			
+			</div>
+		</div>
+	</div>
+</html>

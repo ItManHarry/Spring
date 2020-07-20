@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<!-- 新增修改用户信息 -->
+<html xmlns:th="http://www.thymeleaf.org">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<div th:fragment="module_edit()">
+		<div class = "row">
+			<div class = "col-sm-12">
+				<form action = "/web/biz/company/modify" method = "post">
+					<div class="form-group">
+						<label for="icon">模块Icon</label>
+					    <input type="text" class="form-control" id="icon" name = "icon" v-model = "icon" placeholder="">
+					 </div>
+				  	<div class="form-group">
+				    	<label for="name">模块名称</label>
+				    	<input type="text" class="form-control" id="name" name = "name" v-model = "name" placeholder="">
+				  	</div>
+				  	<div class="form-group">
+				    	<label for="url">模块URL</label>
+				    	<input type="text" class="form-control" id="url" name = "url" v-model = "url" placeholder="">
+				  	</div>
+				  	<div class="form-group">
+				    	<label for="remark">模块说明</label>
+				    	<input type="text" class="form-control" id="remark" name = "remark" v-model = "remark" placeholder="">
+				  	</div>
+				  	<input type = "hidden" v-model = "id" name = "id">
+				</form>
+				<p v-if = "show" class = "text-danger">{{result}}</p>
+			</div> 
+		</div>
+	</div>
+</html>

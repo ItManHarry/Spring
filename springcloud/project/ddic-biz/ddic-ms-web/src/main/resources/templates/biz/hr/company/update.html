@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head th:replace="commons/css::common_css(~{::title}, ~{})">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<title>Company Update Page</title>
+	</head>
+	<body>
+		<!-- 引入公共js文件 -->
+		<div th:replace="commons/js::common_js(~{::script})"></div>
+		<div class="container-fluid" id = "contentdiv"> 
+			<!-- 引入公共nav文件 --> 
+			<div th:include="commons/nav::common_nav()"></div><br>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<h5><i class="fas fa-angle-right"></i>&nbsp;&nbsp;修改公司信息</h5>
+				</div> 
+			</div>
+			<hr>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<form action = "/web/biz/company/modify" method = "post">
+					  <div class="form-group">
+					    <label for="name">公司名称</label>
+					    <input type="text" class="form-control" id="name" name = "name" th:value = "${company.data.name}" placeholder="">
+					  </div>
+					   <div class="form-group">
+					    <label for="code">公司代码</label>
+					    <input type="text" class="form-control" id="code" name = "code" th:value = "${company.data.code}" placeholder="">
+					  </div>
+					  <input type = "hidden" th:value = "${company.data.id}" name = "id">
+					  <button type="submit" class="btn btn-outline-primary btn-sm"><i class = "fas fa-save"></i>&nbsp;&nbsp;保存</button>
+					  <a th:href = "@{~/web/biz/company/list}" class = "btn btn-outline-secondary btn-sm"><i class = "fas fa-undo"></i>&nbsp;&nbsp;取消</a>
+					</form>
+				</div> 
+			</div>
+			<hr>
+		</div>
+		<script>
+			var vm = new Vue({
+				el:"#contentdiv",
+				data:{
+					
+				},
+				methods:{
+					
+				}
+			});
+		</script>
+	</body>
+</html>

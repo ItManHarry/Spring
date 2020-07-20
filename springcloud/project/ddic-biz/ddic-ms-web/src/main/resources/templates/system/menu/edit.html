@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<!-- 新增修改用户信息 -->
+<html xmlns:th="http://www.thymeleaf.org">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<div th:fragment="menu_edit()">
+		<div class = "row">
+			<div class = "col-sm-12">
+				<form action = "/web/biz/company/modify" method = "post">
+					<div class="form-group">
+						<label for="module">所属模块</label>
+						<select class = "form-control" id = "module" name = "module" v-model = "module">
+					    	<option v-for = "module in modules" :value = "module.tid">{{module.moduleNm}}</option>
+					    </select>
+					 </div>
+				  	<div class="form-group">
+				    	<label for="name">菜单名称</label>
+				    	<input type="text" class="form-control" id="name" name = "name" v-model = "name" placeholder="">
+				  	</div>
+				  	<div class="form-group">
+				    	<label for="url">链接地址</label>
+				    	<input type="text" class="form-control" id="url" name = "url" v-model = "url" placeholder="">
+				  	</div>
+				  	<input type = "hidden" v-model = "id" name = "id">
+				</form>
+				<p v-if = "show" class = "text-danger">{{result}}</p>
+			</div> 
+		</div>
+	</div>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head th:replace="commons/css::common_css(~{::title}, ~{})">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<title>Company List Page</title>
+	</head>
+	<body>
+		<!-- 引入公共js文件 -->
+		<div th:replace="commons/js::common_js(~{::script})">
+			<!--加载页面自己的js-->
+		    <script type = "text/javascript" th:src = "@{/static/js/system/nav.js}" charset="UTF-8"></script>
+		</div>
+		<div class="container-fluid" id = "companydiv"> 
+			<!-- 引入公共nav文件 --> 
+			<div th:include="commons/nav::common_nav()"></div>
+			<div class = "row">
+				<div class = "col-sm-2">
+					<!-- 引入左侧导航栏 -->
+					<div th:include="commons/subnav::left_nav(current_position='公司组织信息')"></div>
+				</div>
+				<div class = "col-sm-10 text-right">
+					<button id = "add" class = "btn btn-outline-info btn-sm" @click = "add()"><i class = "fa fa-plus"></i>&nbsp;&nbsp;新增</button>&nbsp;&nbsp;
+				</div> 
+			</div>
+			<br>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<div class="table-responsive-sm">
+						<table class = "table table-bordered table-hover table-sm" id = "list">
+							<!--caption><i class="fa fa-hand-o-right" aria-hidden="true"></i>&nbsp;&nbsp;公司组织信息</caption-->
+							<thead>
+								<tr class = "text-center">
+									<th width = "10%">#ID</th>
+									<th width = "40%">公司代码</th>
+									<th width = "40%">公司名称</th>
+									<th width = "10%">操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for = "data in datas" class = "text-center">
+									<td>{{data.id}}</td>
+									<td>{{data.code}}</td>
+									<td>{{data.name}}</td>
+									<!-- vue拼接超链接方式 -->
+									<!--td>
+										<button class = "btn btn-link" :id = "'edit'+data.id" @click = "edit(data.id)"><i class = "fa fa-cogs"></i></button>
+									</td-->
+									<td>
+										<button  @click = "edit(data.id,data.code,data.name)" class = "btn btn-link btn-xs text-info"><i class = "fa fa-edit"></i></button>
+										<a :href = "'/web/biz/company/move?id='+data.id" class = "btn btn-link btn-sm text-info"><i class = "fa fa-trash-o"></i></a>
+									</td>						
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<nav class="text-right">
+					    <ul class="pagination"></ul>
+					</nav>	
+				</div> 
+			</div>
+			<!-- 新增修改公司信息窗体 -->
+			<div class="modal fade" id="editCompany" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+			  <div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="staticBackdropLabel">{{title}}</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<!-- 引入窗体 -->
+			        <div th:include="/biz/hr/company/edit::company_edit()"></div>
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class = "fa fa-undo"></i>&nbsp;&nbsp;取消</button>
+			        <button type="button" class="btn btn-outline-primary" @click = "save()"><i class = "fa fa-floppy-o"></i>&nbsp;&nbsp;保存</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+		</div>
+		<script>
+			var module = [[${module}]]
+			var editId = "", flag = 0;
+			var vm = new Vue({
+				el:"#companydiv",
+				data:{
+					title:"",	//窗体名称
+					company:"",	//公司名称
+					code:"",	//公司代码
+					id:0,		//公司ID
+					show:false, //是否显示保存结果信息
+					result:"",	//保存结果信息
+					datas:[],
+					name:"",
+					total:[[${total}]]	//获取后台记录总数
+				},
+				methods:{
+					doSearch:function(){
+						getData(1, this.name);
+					},
+					add:function(){
+						this.title = '新增';
+						this.company = '';
+						this.code = '';
+						this.id = 0;
+						modalSwitch("editCompany", 1);
+					},
+					edit:function(id, code, name){
+						/*if(editId == id && flag == 1){
+							$("#edit"+id).popover("hide");
+							flag = 0;
+						}else{
+							var content = "<a href = '#' class = 'btn btn-link text-success'><i class = 'fa fa-cog'></i>&nbsp;&nbsp;编辑</a><br>"
+							+"<a href = '#' class = 'btn btn-link text-success'><i class = 'fa fa-trash-o'></i>&nbsp;&nbsp;删除</a>" 
+							//alert(content)
+							$("#edit"+id).popover({
+								trigger:"focus",
+								html:true,
+								placement:"bottom",
+								container:"body",
+								content:content
+							});	
+							$("#edit"+id).popover("show");
+							flag = 1;
+						}
+						editId = id;*/
+						//var params = {id:id,name:name,code:code};
+						//doEdit(params);
+						this.title = '修改';
+						this.company = name;
+						this.code = code;
+						this.id = id;
+						modalSwitch("editCompany", 1);
+					},
+					testEdit:function(){
+						alert('I am doing the edit action ...')
+					},
+					save:function(){
+						var url = "";
+						if(this.id == 0)
+							url = "/web/biz/company/save";
+						else 
+							url = "/web/biz/company/modify";
+						$.ajax({
+							url:url,
+							type:"post",
+							data:{id:vm.id,name:vm.company,code:vm.code},
+							success:function(r){
+								vm.show = false;
+								vm.result = ""
+								modalSwitch("editCompany", 0);
+								getData(1,"");		
+							},
+							error:function(r){
+								vm.show = true;
+								vm.result = "系统异常,保存失败,请联系管理员!"
+							}
+						})
+					}
+				},
+				created:function(){
+						
+				}
+			});
+			$(function(){
+				$('.pagination').bootstrapPaginator({
+		            bootstrapMajorVersion: 3, 				//对应bootstrap版本
+		            size: 'small', 							//分页大小
+		            currentPage: 1, 						//当前页
+		            numberOfPages: 10, 						//显示的条数
+		            totalPages: Math.ceil(vm.total / 10), 	//总页数
+		            /*
+		             *	分页点击事件
+		             * @param event [jquery对象]
+		             * @param originalEvent [dom原生对象]
+		             * @param type [按钮类型]
+		             * @param page [点击按钮对应的页码]
+		             */
+		            onPageClicked: function (event, originalEvent, type, page) {
+		               	getData(page,vm.name);
+		            }
+		        });
+				getData(1,"");			
+			})
+			/**
+			*获取数据
+			*/
+			function getData(page,name){
+				$.ajax({
+					url:"/web/biz/company/all",
+					type:"get",
+					data:{order:"name", page:page, limit:10, name:name},
+					dataType:"json",
+					success:function(r){
+						if(r.status == 200){
+							vm.total = r.number
+							//重新设置总页数
+							$('.pagination').bootstrapPaginator("setOptions", {
+								currentPage: page, 						//当前页
+								totalPages: Math.ceil(vm.total / 10), 	// 总页数
+							})
+							vm.datas = r.data
+						}
+					},
+					error:function(r){
+						alert(r.message)
+					}
+				})
+			}	
+			
+			function test(){
+				alert('test')
+			}
+		</script>
+	</body>
+</html>

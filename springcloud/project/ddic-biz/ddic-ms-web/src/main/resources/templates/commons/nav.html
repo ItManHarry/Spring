@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<div th:fragment="common_nav()" id = "system_nav">
+	    <nav class="navbar navbar-expand-lg navbar-light">
+	 		<a class="navbar-brand" href="#">
+	 			<img th:src = "@{/static/images/logoes/head_logo.png}"  alt = "Doosan">
+	 		</a>
+		  	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		    	<span class="navbar-toggler-icon"></span>
+		  	</button>			
+		  	<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			   <small class = "text-secondary">斗山(北京)系统集成有限公司</small>
+		  	</div>
+		  	<div class = "navbar-text">		  		
+		  		<a class = "btn btn-link" href = "#" id = "logout" data-content="<a class = 'btn btn-link text-primary' href = '/web/system/home'><i class='fa fa-home'></i>&nbsp;&nbsp;Go Home</a><br><a class = 'btn btn-link text-primary' href = '/web/system/logout'><i class='fa fa-sign-out'></i>&nbsp;&nbsp;Sign&nbsp;&nbsp;Out</a>" data-container="body" data-toggle="popover" data-placement="bottom">
+		  			<i class="fa fa-user-o"></i>&nbsp;&nbsp;<span th:text="${session.currentUserName}"></span>
+		  		</a>
+		  	</div>
+		</nav>
+		<hr>
+	</div>
+</html>

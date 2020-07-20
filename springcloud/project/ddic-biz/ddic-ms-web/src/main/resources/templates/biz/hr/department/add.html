@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head th:replace="commons/css::common_css(~{::title}, ~{})">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<title>Department Add Page</title>
+		<link rel = "stylesheet" th:href = "@{/static/css/bootstrap-treeview.min.css}" media="screen"/>
+	</head>
+	<body>
+		<!-- 引入公共js文件 -->
+		<div th:replace="commons/js::common_js(~{::script})">
+			<!--加载页面自己的js-->
+		    <script type = "text/javascript" th:src = "@{/static/js/bootstrap-treeview.min.js}" charset="UTF-8"></script>
+		</div>
+		<div class="container-fluid" id = "departmentAddDiv"> 
+			<!-- 引入公共nav文件 --> 
+			<div th:include="commons/nav::common_nav()"></div><br>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<h5><i class="fas fa-angle-right"></i>&nbsp;&nbsp;新增部门</h5>
+				</div> 
+			</div>
+			<hr>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<form action = "/web/biz/department/save" method = "post">
+					<div class="form-group">
+					    <label for="parentid">公司所属</label>
+					    <select class="form-control" id="companyid" name = "companyid" :value = "0">
+					    	<option v-for = "company in companies" :value = "company.id">{{company.name}}</option>
+					    </select>
+					  </div>
+					  <div class="form-group">
+					    <label for="name">部门名称</label>
+					    <input type="text" class="form-control" id="name" name = "name" placeholder="">
+					  </div>
+					  <div class="form-group">
+					    <label for="code">部门代码</label>
+					    <input type="text" class="form-control" id="code" name = "code" placeholder="">
+					  </div>
+					  <div class="form-group">
+					    <label for="parentid">上级部门</label>
+					    <select class="form-control" id="parentid" name = "parentid">
+					    	<option value = "0">Company</option>
+					    	<option value = "1">Department</option>
+					    </select>
+					  </div>
+					  <div class="form-group">
+					    <div id="tree"></div>
+					  </div>
+					  <button type="submit" class="btn btn-outline-primary btn-sm" :disabled = "disabled"><i class = "fas fa-save"></i>&nbsp;&nbsp;保存</button>
+					  <a th:href = "@{~/web/biz/department/list}" class = "btn btn-outline-secondary btn-sm"><i class = "fas fa-undo"></i>&nbsp;&nbsp;取消</a>
+					</form>
+				</div> 
+			</div>
+			<hr>
+		</div>
+		<script>
+			var tree = [
+			  {
+			    text:"Parent 1",
+			    nodes: [
+			      {
+			        text:"Child 1",
+			        nodes: [
+			          {
+			            text:"Grandchild 1"
+			          },
+			          {
+			            text:"Grandchild 2"
+			          }
+			        ]
+			      },
+			      {
+			        text:"Child 2"
+			      }
+			    ]
+			  },
+			  {
+			    text:"Parent 2"
+			  },
+			  {
+			    text:"Parent 3"
+			  },
+			  {
+			    text:"Parent 4"
+			  },
+			  {
+			    text:"Parent 5"
+			  }
+			]; 
+			$(function(){
+				$('#tree').treeview({data:tree});  
+			})
+			var vm = new Vue({
+				el:"#departmentAddDiv",
+				data:{
+					companies:[],
+					disabled: true,
+					companyTotal:[[${companyTotal}]]	//获取公司记录总数
+				},
+				methods:{
+					
+				},
+				created:function(){
+					$.ajax({
+						url:"/web/biz/company/all",
+						type:"get",
+						data:{order:"name", page:1, limit:vm.companyTotal, name:""},
+						dataType:"json",
+						success:function(r){
+							if(r.status == 200){
+								vm.companies = r.data
+								vm.disabled = false
+							}
+						},
+						error:function(r){
+							alert(r.message)
+						}
+					})
+				}
+			});
+		</script>
+	</body>
+</html>

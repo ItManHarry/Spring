@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<div th:fragment="common_nav()" id = "system_nav">
+	    <nav class="navbar navbar-expand-lg navbar-light">
+	 		<a class="navbar-brand" href="#">
+	 			<img th:src = "@{/static/images/logoes/head_logo.png}"  alt = "Doosan">
+	 		</a>
+		  	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		    	<span class="navbar-toggler-icon"></span>
+		  	</button>			
+		  	<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			    <ul class="navbar-nav mr-auto">
+			      <li class="nav-item dropdown">
+			        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			          	<i class="fas fa-users"></i>&nbsp;&nbsp;人事组织
+			        </a>
+			        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+			          <a class="dropdown-item" th:href = "@{~/web/biz/company/list}">公司信息</a>
+			          <div class="dropdown-divider"></div>
+			          <a class="dropdown-item" th:href = "@{~/web/biz/department/list}">部门信息</a>
+			          <div class="dropdown-divider"></div>
+			          <a class="dropdown-item" href="#">雇员信息</a>
+			        </div>
+			      </li>
+			      <li class="nav-item dropdown">
+			        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			          	<i class="fas fa-project-diagram"></i>&nbsp;&nbsp;项目管理
+			        </a>
+			        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+			          <a class="dropdown-item" href="#">项目信息</a>
+			          <div class="dropdown-divider"></div>
+			          <a class="dropdown-item" href="#">项目进度</a>
+			          <div class="dropdown-divider"></div>
+			          <a class="dropdown-item" href="#">ISSUE管理</a>
+			        </div>
+			      </li>
+			      <li class="nav-item dropdown">
+			        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			          	<i class="fas fa-folder"></i>&nbsp;&nbsp;文档管理
+			        </a>
+			        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+			          <a class="dropdown-item" href="#">文档上传</a>
+			          <div class="dropdown-divider"></div>
+			          <a class="dropdown-item" href="#">文档下载</a>
+			        </div>
+			      </li>
+			      <li class="nav-item dropdown">
+			        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			          	<i class="fas fa-cogs"></i>&nbsp;&nbsp;系统管理
+			        </a>
+			        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+			          <a class="dropdown-item" href="#">系统菜单</a>
+			          <div class="dropdown-divider"></div>
+			          <a class="dropdown-item" href="#">系统角色</a>
+			          <div class="dropdown-divider"></div>
+			          <a class="dropdown-item" href="#">系统权限</a>
+			          <div class="dropdown-divider"></div>
+			          <a class="dropdown-item" href="#">系统用户</a>
+			          <div class="dropdown-divider"></div>
+			          <a class="dropdown-item" href="#">文档目录</a>
+			          <div class="dropdown-divider"></div>
+			          <a class="dropdown-item" href="#">目录权限</a>
+			        </div>
+			      </li>
+			    </ul>
+		  	</div>
+		  	<div class = "navbar-text">		  		
+		  		<a class = "btn btn-link" href = "#" id = "logout" data-content="<a class = 'btn btn-link text-primary' href = '/web/system/home'><i class='fas fa-home'></i>&nbsp;&nbsp;Go Home</a><br><a class = 'btn btn-link text-primary' href = '/web/system/logout'><i class='fas fa-sign-out-alt'></i>&nbsp;&nbsp;Sign&nbsp;&nbsp;Out</a>" data-container="body" data-toggle="popover" data-placement="bottom">
+		  			<i class="fas fa-user"></i>&nbsp;&nbsp;<span th:text="${session.currentUser}"></span>
+		  		</a>
+		  		<!--h4 id = "visited">Times:</h4-->
+		  		<!--div class="btn-group">
+				  <button type="button" class="btn btn-info btn-sm"><i class="fas fa-user"></i>&nbsp;&nbsp;<span th:text="${session.currentUser}"></span></button>
+				  <button type="button" class="btn btn-info btn-sm dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				    <span class="sr-only">Toggle Dropdown</span>
+				  </button>
+				  <div class="dropdown-menu">
+				    <a class="dropdown-item text-center btn btn-link btn-sm" href="#"><i class="fas fa-sign-out-alt"></i>&nbsp;&nbsp;Sign Out</a>
+				  </div>
+				</div-->
+		  	</div>
+		</nav>
+		<hr>
+	</div>
+	<script>		
+		
+	</script>
+</html>

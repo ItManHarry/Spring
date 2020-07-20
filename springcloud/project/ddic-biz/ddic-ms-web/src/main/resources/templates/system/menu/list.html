@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head th:replace="commons/css::common_css(~{::title}, ~{})">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<title>系统菜单</title>
+	</head>
+	<body>
+		<!-- 引入公共js文件 -->
+		<div th:replace="commons/js::common_js(~{::script})">
+		    <!--加载页面自己的js-->
+		    <script type = "text/javascript" th:src = "@{/static/js/system/nav.js}" charset="UTF-8"></script>
+		</div>
+		<div class="container-fluid" id = "menudiv"> 
+			<!-- 引入公共nav文件 --> 
+			<div th:include="commons/nav::common_nav()"></div>
+			<div class = "row">
+				<div class = "col-sm-2">
+					<!-- 引入左侧导航栏 -->
+					<div th:include="commons/subnav::left_nav(current_position='系统菜单')"></div>
+				</div>
+				<div class = "col-sm-10 text-right">
+					<button id = "add" class = "btn btn-outline-info btn-sm" @click = "add()"><i class = "fa fa-plus"></i>&nbsp;&nbsp;新增</button>&nbsp;&nbsp;
+				</div> 
+			</div>
+			<br>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<div class="table-responsive-sm">
+						<table class = "table table-bordered table-hover table-sm" id = "list">
+							<!--caption><i class="fa fa-hand-o-right" aria-hidden="true"></i>&nbsp;&nbsp;公司组织信息</caption-->
+							<thead>
+								<tr class = "text-center">
+									<th width = "25%">模块</th>
+									<th width = "25%">菜单</th>
+									<th width = "20%">地址</th>
+									<th width = "15%">状态</th>
+									<th width = "15%">操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for = "data in datas" class = "text-center">
+									<td>{{data.moduleNm}}</td>
+									<td>{{data.name}}</td>
+									<td>{{data.url}}</td>
+									<td>{{data.status}}</td>
+									<!-- vue拼接超链接方式 -->
+									<!--td>
+										<button class = "btn btn-link" :id = "'edit'+data.id" @click = "edit(data.id)"><i class = "fa fa-cogs"></i></button>
+									</td-->
+									<td>
+										<button  @click = "edit(data.tid,data.module,data.name,data.url)" class = "btn btn-link btn-xs text-info" data-toggle="tooltip" data-placement="bottom" title="编辑"><i class = "fa fa-edit"></i></button>
+										<a :href = "'/web/system/menu/move?id='+data.tid" class = "btn btn-link btn-sm text-info" data-toggle="tooltip" data-placement="bottom" title="停用"><i class = "fa fa-times"></i></a>
+										<a :href = "'/web/system/menu/recover?id='+data.tid" class = "btn btn-link btn-sm text-info" data-toggle="tooltip" data-placement="bottom" title="启用"><i class = "fa fa-check"></i></a>
+									</td>						
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<nav class="text-right">
+					    <ul class="pagination"></ul>
+					</nav>	
+				</div> 
+			</div>
+			<!-- 新增修改用户窗体 -->
+			<div class="modal fade" id="editMenu" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+			  <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="staticBackdropLabel">{{title}}</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<!-- 引入窗体 -->
+			        <div th:include="/system/menu/edit::menu_edit()"></div>
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class = "fa fa-undo"></i>&nbsp;&nbsp;取消</button>
+			        <button type="button" class="btn btn-outline-primary" @click = "save()"><i class = "fa fa-floppy-o"></i>&nbsp;&nbsp;保存</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+		</div>
+		<script>
+			var module = [[${module}]]
+			var vm = new Vue({
+				el:"#menudiv",
+				data:{
+					title:"",	//窗体名称
+					module:0,	//模块所属
+					name:"",	//菜单名称
+					url:"",		//链接地址
+					id:0,		//菜单ID
+					datas:[],	//获取表格数据
+					modules:[],	//模块下拉选择
+					total:[[${total}]],	//获取后台记录总数
+					show:false, //是否显示保存结果信息 - 用于模式窗体
+					result:""	//保存结果信息 - 用于模式窗体					
+				},
+				methods:{
+					doSearch:function(){
+						getData(1);
+					},
+					add:function(){
+						this.show = false;
+						this.result = "";
+						this.title = '新增';
+						this.module = 0;
+						this.name= '';
+						this.url = '';
+						this.id = 0;
+						modalSwitch("editMenu", 1);
+					},
+					edit:function(id, module, name, url){
+						this.show = false;
+						this.result = "";
+						this.title = '修改';
+						this.id = id;
+						this.module = module;
+						this.name = name;
+						this.url = url;
+						modalSwitch("editMenu", 1);
+					},
+					save:function(){
+						if(vm.module == 0){
+							vm.show = true;
+							vm.result = "请选择模块所属!"
+							return ;
+						}
+						if($.trim(vm.name) == ""){
+							vm.show = true;
+							vm.result = "请填写菜单名称!"
+							return ;
+						}
+						if($.trim(vm.url) == ""){
+							vm.show = true;
+							vm.result = "请填写菜单链接地址!"
+							return ;
+						}
+						$.ajax({
+							url:"/web/system/menu/save",
+							type:"post",
+							data:{id:vm.id,module:vm.module,name:vm.name,url:vm.url},
+							success:function(r){
+								if(r.status == 200){
+									vm.show = false;
+									vm.result = ""
+									modalSwitch("editMenu", 0);
+									getData(1);		
+								}else{
+									vm.show = true;
+									vm.result = r.message;
+								}
+							},
+							error:function(r){
+								vm.show = true;
+								vm.result = "系统异常,保存失败,请联系管理员!"
+							}
+						})
+					}
+				},
+				created:function(){
+					//alert(vm.total)
+				}
+			});
+			$(function(){
+				//获取模块下拉列表	
+				$.ajax({
+					url:"/web/system/module/getAll",
+					type:"get",
+					data:{},
+					dataType:"json",
+					success:function(r){
+						vm.modules = r.data
+					},
+					error:function(){
+						alert('Get Modules List Error!!!')
+					}
+				});
+				$('.pagination').bootstrapPaginator({
+		            bootstrapMajorVersion: 3, 				//对应bootstrap版本
+		            size: 'small', 							//分页大小
+		            currentPage: 1, 						//当前页
+		            numberOfPages: 10, 						//显示的条数
+		            totalPages: Math.ceil(vm.total / 10), 	//总页数
+		            /*
+		             *	分页点击事件
+		             * @param event [jquery对象]
+		             * @param originalEvent [dom原生对象]
+		             * @param type [按钮类型]
+		             * @param page [点击按钮对应的页码]
+		             */
+		            onPageClicked: function (event, originalEvent, type, page) {
+		               	getData(page);
+		            }
+		        });				
+				getData(1);	
+			})
+			/**
+			*获取数据
+			*/
+			function getData(page){
+				$.ajax({
+					url:"/web/system/menu/all",
+					type:"get",
+					data:{page:page, limit:10},
+					dataType:"json",
+					success:function(r){
+						if(r.status == 200){
+							vm.total = r.number
+							//重新设置总页数
+							$('.pagination').bootstrapPaginator("setOptions", {
+								currentPage: page, 						//当前页
+								totalPages: Math.ceil(vm.total / 10), 	//总页数
+							})
+							vm.datas = r.data
+							$("[data-toggle='tooltip']").tooltip();
+						}
+					},
+					error:function(r){
+						alert('Data error!')
+					}
+				})
+			}
+		</script>
+	</body>
+</html>

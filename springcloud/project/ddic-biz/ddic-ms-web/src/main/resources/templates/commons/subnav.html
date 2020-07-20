@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<!-- 子导航 左侧导航栏 -->
+<html xmlns:th="http://www.thymeleaf.org">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<!-- 传入参数 : 1. current_position 当前位置  -->
+	<div th:fragment="left_nav(current_position)">
+		<a href = "#" id = "more" class = "btn btn-outline-secondary"><i class="fa fa-list" aria-hidden="true"></i></a>&nbsp;&nbsp;
+		<i class="fa fa-coffee text-secondary" aria-hidden="true"></i>&nbsp;&nbsp;<span class = "text-secondary" th:text = "${current_position}"></span>
+	</div>
+</html>

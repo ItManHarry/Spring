@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head th:replace="commons/css::common_css(~{::title}, ~{::link})">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<title>文档目录授权</title>
+		<link rel = "stylesheet" th:href = "@{/static/css/ztree/zTreeStyle.css}" media="screen"/>
+	</head>
+	<body>
+		<!-- 引入公共js文件 -->
+		<div th:replace="commons/js::common_js(~{::script})">
+		    <!--加载页面自己的js-->
+		    <script type = "text/javascript" th:src = "@{/static/js/system/nav.js}" charset="UTF-8"></script>
+		    <script type = "text/javascript" th:src = "@{/static/js/ztree/jquery.ztree.all.min.js}" charset="UTF-8"></script>
+		</div>
+		<div class="container-fluid" id = "catalogauthdiv"> 
+			<!-- 引入公共nav文件 --> 
+			<div th:include="commons/nav::common_nav()"></div>
+			<div class = "row">
+				<div class = "col-sm-2">
+					<!-- 引入左侧导航栏 -->
+					<div th:include="commons/subnav::left_nav(current_position='文档授权')"></div>
+				</div>
+				<div class = "col-sm-10 text-right">
+					<button id = "auth" class = "btn btn-outline-info btn-sm" @click = "doAuth()" :disabled = "disabled"><i class = "fa fa-gavel"></i>&nbsp;&nbsp;授权</button>&nbsp;&nbsp;
+					<button id = "unauth" class = "btn btn-outline-danger btn-sm" @click = "undoAuth()" :disabled = "disabled"><i class = "fa fa-undo"></i>&nbsp;&nbsp;撤权</button>
+				</div> 
+			</div><br>
+			<div class = "row no-gutters">
+				<div class = "col-sm-12">
+					<ul class="pagination"></ul>
+				</div>
+			</div>
+			<div class="row no-gutters">
+				<div class = "col-sm-12">
+					<div class="card-deck">
+						<div class="card">
+					    	<h6 class="card-header text-secondary">
+							    <i class="fa fa-users"></i>&nbsp;&nbsp;系统用户 
+							</h6>
+					      	<div class="card-body">
+					      		<ul class="list-group list-group-flush">
+					      			<li class="list-group-item" v-for = "user in users" :key = "user.id">
+										<input class="form-check-input" type="radio" name = "su" :id="user.code" :value="user.code" v-model="puCd">
+		  								<label class="form-check-label" :for="user.code">{{user.name}}</label>
+									</li>
+					      		</ul>
+					      	</div>
+					  	</div>
+					  	<div class="card">
+					    	<h6 class="card-header text-secondary">
+							    <i class="fa fa-folder"></i>&nbsp;&nbsp;文档目录
+							</h6>
+					     	<div class="card-body">
+					     		<ul id = "tree" class = "ztree"></ul>
+					      	</div>
+					    </div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script>
+		var module = [[${module}]]
+		var zTree = null;	//目录树	
+		var setting = {		//树配置
+		        check: {
+		            enable: true
+		        },
+		        view: {
+		            dblClickExpand: false,
+		            showLine: true,
+		            selectedMulti: false
+		        },
+		        data: {
+		            simpleData: {
+		                enable:true,
+		                idKey: "id",
+		                pIdKey: "pId",
+		                rootPId: ""
+		            }
+		        },
+		        callback: {
+		            beforeClick: function(treeId, treeNode) {
+		                zTree = $.fn.zTree.getZTreeObj("tree");
+		                if (treeNode.isParent) {
+		                    zTree.expandNode(treeNode);
+		                    return false;
+		                } else {
+		                    return true;
+		                }
+		            }
+		        }
+		   	};
+			var vm = new Vue({
+				el:"#catalogauthdiv",
+				data:{
+					puCd:'',			//授权用户账号picked-user-code
+					puNm:'',			//授权用户账号picked-user-name
+					cs:[],				//授权目录catalogs
+					total:[[${total}]],	//用户总数
+					users:[],
+					disabled:false
+				},
+				watch:{
+					puCd:function(v){
+						//alert(v)
+						for(var i = 0; i < this.users.length; i++){
+							if(this.users[i].id == v)
+								this.puNm = this.users[i].name
+						}
+						loadAuthedCatalogs(v)
+					}
+				},
+				methods:{
+					doAuth:function(){
+						if(this.puCd == ''){
+							$.alert({
+								type:'red',
+							    icon:'fa fa-info',
+							    title:'提示',
+							    content: '请选择用户！'
+							});
+						}else{
+						   	var tree = $.fn.zTree.getZTreeObj("tree");
+							var nodes = tree.getCheckedNodes(true);//获取所有选中的节点
+							var ids = [];
+							for(var i = 0; i < nodes.length; i++){
+								ids.push(nodes[i].id);
+							}
+							if(ids.join() == ""){
+								$.alert({
+									type:'red',
+								    icon:'fa fa-info',
+								    title:'提示',
+								    content: '请选择目录！'
+								});
+							}else{
+								vm.disabled = true;
+								//执行保存
+								$.ajax({
+									url:"/web/biz/document/catalog/doAuth",
+								   	type:"post",
+								   	data:{userId:vm.puCd,catalogs:ids.join()},
+								   	success:function(r){
+								   		vm.disabled = false;
+								   		$.alert({
+											type:'green',
+										    icon:'fa fa-info',
+										    title:'提示',
+										    content: '目录成功授权！',
+										    onClose:function(){
+										    	vm.puCd = '';
+										    	getUsers(1);
+										   		loadCatalogTree();
+										    }
+										});
+								   	},
+								   	error:function(){
+								   		$.alert({
+											type:'red',
+										    icon:'fa fa-info',
+										    title:'提示',
+										    content: '目录授权失败,请联系管理员！'
+										});
+								   	}
+								});
+							}
+						}
+					},
+					undoAuth:function(){
+						if(this.puCd == ''){
+							$.alert({
+								type:'red',
+							    icon:'fa fa-info',
+							    title:'提示',
+							    content: '请选择用户！'
+							});
+						}else{
+							$.confirm({
+								type:'red',
+							    icon:'fa fa-info',
+							    title: '提示',
+							    content: "确定要撤销用户("+vm.puNm+")目录权限",
+							    autoClose: 'cancelUndo|5000',
+							    buttons: {
+							    	undoAuth: {
+							            text: '确定',
+							            action: function () {
+							            	vm.disabled = true;
+											//执行保存
+											$.ajax({
+												url:"/web/biz/document/catalog/undoAuth",
+											   	type:"post",
+											   	data:{userId:vm.puCd},
+											   	success:function(r){
+											   		vm.disabled = false;
+											   		$.alert({
+														type:'green',
+													    icon:'fa fa-info',
+													    title:'提示',
+													    content: '目录权限成功撤销！',
+													    onClose:function(){
+													    	vm.puCd = '';
+													    	getUsers(1);
+													   		loadCatalogTree();
+													    }
+													});
+											   	},
+											   	error:function(){
+											   		$.alert({
+														type:'red',
+													    icon:'fa fa-info',
+													    title:'提示',
+													    content: '撤销目录权限失败,请联系管理员！'
+													});
+											   	}
+											});
+							            }
+							        },
+							        cancelUndo: {
+							        	text:"取消",
+							        	action:function () {}
+							        }
+							    }
+							});
+						}						
+					}
+				},
+				created:function(){
+					
+				}
+			});
+			$(function(){
+				$('.pagination').bootstrapPaginator({
+		            bootstrapMajorVersion: 3, 				//对应bootstrap版本
+		            size: 'small', 							//分页大小
+		            alignment:"right",
+		            currentPage: 1, 						//当前页
+		            numberOfPages: 10, 						//显示的条数
+		            totalPages: Math.ceil(vm.total / 10), 	//总页数
+		            /*
+		             *	分页点击事件
+		             * @param event [jquery对象]
+		             * @param originalEvent [dom原生对象]
+		             * @param type [按钮类型]
+		             * @param page [点击按钮对应的页码]
+		             */
+		            onPageClicked: function (event, originalEvent, type, page) {
+		               	getUsers(page);
+		            }
+		        });
+				//加载用户
+				getUsers(1);
+				//加载目录树
+				loadCatalogTree();
+			});
+			/**
+			*	获取用户数据
+			*/
+			function getUsers(page){
+				$.ajax({
+					url:"/web/system/user/all",
+					type:"get",
+					data:{page:page, limit:10},
+					dataType:"json",
+					success:function(r){
+						if(r.status == 200){
+							vm.total = r.number
+							//重新设置总页数
+							$('.pagination').bootstrapPaginator("setOptions", {
+								currentPage: page, 						//当前页
+								totalPages: Math.ceil(vm.total / 10), 	// 总页数
+							})
+							vm.users = r.data
+							$("[data-toggle='tooltip']").tooltip();
+						}
+					},
+					error:function(r){
+						alert(r.message)
+					}
+				})
+			}
+			/**
+			* 	加载目录树
+			*/
+			function loadCatalogTree(){
+				$.ajax({
+					url:"/web/biz/document/catalog/tree",
+					type:"get",
+					data:{},
+					dataType:"json",
+					success:function(r){
+						if(r.status == 200){
+							var t = $("#tree");
+							var zNodes = r.data;
+							zTree = $.fn.zTree.init(t, setting, zNodes);
+						}
+					},
+					error:function(r){
+						alert(r.message)
+					}
+				})
+			}
+			/*
+			*  	加载已授权的目录
+			*	传入用户id参数
+			*/
+		   function loadAuthedCatalogs(userId){
+			   	var tree = $.fn.zTree.getZTreeObj("tree");
+			    var nodes = tree.transformToArray(tree.getNodes());
+				for(var i = 0; i < nodes.length; i++){
+					tree.checkNode(nodes[i], false);
+				}
+				$.ajax({
+					url:"/web/biz/document/catalog/authed",
+				   	type:"get",
+				   	data:{userId:userId},
+				   	success:function(r){
+				   		for(var i = 0; i < nodes.length; i++){
+							if($.inArray(nodes[i].id, r.data) >= 0)
+								tree.checkNode(nodes[i], true);
+						}
+				   	},
+				   	error:function(){
+					   
+				   	}
+				});
+		   }
+		</script>
+	</body>
+</html>

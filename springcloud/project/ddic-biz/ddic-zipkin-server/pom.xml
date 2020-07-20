@@ -1,0 +1,32 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.doosan.biz</groupId>
+    <artifactId>ddic</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>ddic-zipkin-server</artifactId>
+  <name>ddic-server-zipkin</name>
+  <description>DDIC Zipkin Server</description>
+  <dependencies>
+  	<dependency>
+  		<groupId>io.zipkin.java</groupId>
+  		<artifactId>zipkin-server</artifactId>
+  		<version>2.9.4</version>
+  		<exclusions>
+  			<exclusion>
+  				<groupId>org.apache.logging.log4j</groupId>
+  				<artifactId>log4j-slf4j-impl</artifactId>
+  			</exclusion>
+  		</exclusions>
+  	</dependency>
+  	<dependency>
+  		<groupId>io.zipkin.java</groupId>
+  		<artifactId>zipkin-autoconfigure-ui</artifactId>
+  		<version>2.9.4</version>
+  	</dependency>
+  </dependencies>
+  <build>
+  	<finalName>ddic-server-zipkin</finalName>
+  </build>
+</project>

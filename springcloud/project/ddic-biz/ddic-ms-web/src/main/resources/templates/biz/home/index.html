@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="commons/css::common_css(~{::title}, ~{})">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<title>Home Page</title>
+</head>
+<body>
+	<!-- 引入公共js文件 -->
+	<div th:replace="commons/js::common_js(~{::script})"></div>
+	<div class="container-fluid" id = "indexdiv">
+		<!-- 引入公共nav文件 --> 
+		<div th:include="commons/nav::common_nav()"></div><br>
+		<!-- 加载模块 -->
+		<div v-for = "module in modules">
+			<div class = "row">
+				<div class = "col-sm-3" v-for = "data in module">
+					<div class="card">
+				      <div class="card-body text-center">
+				      	<a :href="data.moduleUrl" class="btn btn-link text-info">
+			      			<span style = "font-size:72pt;"><i :class="data.moduleIcon"></i></span><br>
+			      			<span style = "font-size:16pt;">{{data.moduleNm}}</span><br>
+			      			 <!--small class="card-text">
+					        	{{data.moduleRmk}}系统菜单/系统角色/目录管理......
+				       		</small-->	
+			      		</a>
+				      </div>
+				    </div>
+				</div>
+			</div><br>
+		</div>
+		<div class = "row justify-content-sm-center" v-if = "show">
+			<div class = "col-6 text-center">
+				<h3 class = "alert alert-danger">{{message}}</h3>
+			</div>
+		</div>
+	</div>
+	<script>
+		var vm = new Vue({
+			el:"#indexdiv",
+			data:{				
+				modules:[], //系统模块
+				show:false,
+				message:""
+			},
+			methods:{
+				
+			},
+			created:function(){
+				//alert('Created...');
+			}
+		});
+		$(function(){
+			//获取模块
+			$.ajax({
+				url:"/web/system/module/homeModules",
+				type:"get",
+				data:{},
+				dataType:"json",
+				success:function(r){
+					if(r.data.length == 0){
+						vm.show = true
+						vm.message = '账号未赋予系统权限,请联系管理员!'
+					}else{
+						vm.modules = r.data
+					}
+				},
+				error:function(){
+					alert('Get Modules List Error!!!')
+				}
+			});
+		})
+	</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="commons/css::common_css(~{::title}, ~{})">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<title>Home Page</title>
+</head>
+<body>
+	<!-- 引入公共js文件 -->
+	<div th:replace="commons/js::common_js(~{::script})"></div>
+	<div class="container-fluid" id = "homediv">
+		<!-- 引入公共nav文件 --> 
+		<div th:include="commons/nav::common_nav()"></div><br>
+		<div class="card text-center">
+		  <div class="card-header">
+		    <ul class="nav nav-tabs card-header-tabs">
+		      <li class="nav-item">
+		        <a class="nav-link" :class = "{active:tab1}" href="#" @click = "changeTab(1)">Tab1</a>
+		      </li>
+		      <li class="nav-item">
+		        <a class="nav-link" :class = "{active:tab2}" href="#" @click = "changeTab(2)">Tab2</a>
+		      </li>
+		      <li class="nav-item">
+		        <a class="nav-link" :class = "{active:tab3}" href="#" @click = "changeTab(3)">Tab3</a>
+		      </li>
+		    </ul>
+		  </div>
+		  <div class="card-body">
+		  	<div id = "tab1" v-if = "tab1">
+		  		<h5 class="card-title">Special title treatment - Tab1</h5>
+			    <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+			    <a href="#" class="btn btn-primary">Go !</a>
+		  	</div>
+		  	<div id = "tab2" v-if = "tab2">
+		  		<h5 class="card-title">Special title treatment - Tab2</h5>
+			    <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+			    <a href="#" class="btn btn-primary">Go !</a>
+		  	</div>
+		  	<div id = "tab3" v-if = "tab3">
+		  		<h5 class="card-title">Special title treatment - Tab3</h5>
+			    <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+			    <a href="#" class="btn btn-primary">Go !</a>
+		  	</div>
+		  </div>
+		</div>
+	</div>
+	<script>
+		var vm = new Vue({
+			el:"#homediv",
+			data:{				
+				tab1:true,
+				tab2:false,
+				tab3:false
+			},
+			methods:{
+				changeTab:function(id){
+					switch(id){
+						case 1:
+							this.tab1 = true;
+							this.tab2 = false;
+							this.tab3 = false;
+							break;
+						case 2:
+							this.tab1 = false;
+							this.tab2 = true;
+							this.tab3 = false;
+							break;
+						case 3:
+							this.tab1 = false;
+							this.tab2 = false;
+							this.tab3 = true;
+							break;
+						default:
+							this.tab1 = true;
+							this.tab2 = false;
+							this.tab3 = false;
+							break;
+					}
+				}
+			}
+		});
+		$(function(){
+			//alert(vm.name)
+		})
+	</script>
+</body>
+</html>

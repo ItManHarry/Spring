@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head th:replace="commons/css::common_css(~{::title}, ~{})">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<title>System Error Page</title>
+	</head>
+	<body>
+		<!-- 引入公共js文件 -->
+		<div th:replace="commons/js::common_js(~{})">
+		</div>
+		<div class="container-fluid"> 
+			<!-- 引入公共nav文件 --> 
+			<div th:replace="commons/nav::common_nav()"></div><br>
+			<div class = "row">
+				<div class = "col-sm-12 text-center">
+					<h1>系统错误, 请联系管理员 !</h1>
+				</div> 
+			</div>
+		</div>
+	</body>
+</html>

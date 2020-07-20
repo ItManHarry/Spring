@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head th:replace="commons/css::common_css(~{::title}, ~{::link})">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<title>文档目录清单</title>
+		<link rel = "stylesheet" th:href = "@{/static/css/ztree/zTreeStyle.css}" media="screen"/>
+	</head>
+	<body>
+		<!-- 引入公共js文件 -->
+		<div th:replace="commons/js::common_js(~{::script})">
+		    <!--加载页面自己的js-->
+		    <script type = "text/javascript" th:src = "@{/static/js/system/nav.js}" charset="UTF-8"></script>
+		    <script type = "text/javascript" th:src = "@{/static/js/ztree/jquery.ztree.all.min.js}" charset="UTF-8"></script>
+		</div>
+		<div class="container-fluid" id = "catalogdiv"> 
+			<!-- 引入公共nav文件 --> 
+			<div th:include="commons/nav::common_nav()"></div>
+			<div class = "row">
+				<div class = "col-sm-2">
+					<!-- 引入左侧导航栏 -->
+					<div th:include="commons/subnav::left_nav(current_position='文档上传')"></div>
+				</div>
+				<div class = "col-sm-10 text-right">
+					<button id = "add" class = "btn btn-outline-info btn-sm" @click = "add()"><i class = "fa fa-plus"></i>&nbsp;&nbsp;新增</button>&nbsp;&nbsp;
+				</div> 
+			</div>
+			<br>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<div class="table-responsive-sm">
+						<table class = "table table-bordered table-hover table-sm" id = "list">
+							<!--caption><i class="fa fa-hand-o-right" aria-hidden="true"></i>&nbsp;&nbsp;公司组织信息</caption-->
+							<thead>
+								<tr class = "text-center">
+									<th width = "20%">目录</th>
+									<th width = "50%">父目录</th>
+									<th width = "15%">状态</th>
+									<th width = "15%">操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for = "data in datas" class = "text-center">
+									<td>{{data.name}}</td>
+									<td>{{data.parentPath}}</td>
+									<td>{{data.stsStr}}</td>
+									<!-- vue拼接超链接方式 -->
+									<!--td>
+										<button class = "btn btn-link" :id = "'edit'+data.id" @click = "edit(data.id)"><i class = "fa fa-cogs"></i></button>
+									</td-->
+									<td>
+										<button  @click = "edit(data.id,data.name,data.parentId,data.parentPath,data.status,data.leaf)" class = "btn btn-link btn-xs text-info" data-toggle="tooltip" data-placement="bottom" title="编辑"><i class = "fa fa-edit"></i></button>
+										<a :href = "'/web/biz/document/catalog/status?sts=0&id='+data.id" class = "btn btn-link btn-sm text-info" data-toggle="tooltip" data-placement="bottom" title="停用"><i class = "fa fa-times"></i></a>
+										<a :href = "'/web/biz/document/catalog/status?sts=1&id='+data.id" class = "btn btn-link btn-sm text-info" data-toggle="tooltip" data-placement="bottom" title="启用"><i class = "fa fa-check"></i></a>
+									</td>						
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<nav class="text-right">
+					    <ul class="pagination"></ul>
+					</nav>	
+				</div> 
+			</div>
+			<!-- 新增修改文档目录窗体 -->
+			<div class="modal fade" id="editCatalog" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+			  <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="staticBackdropLabel">{{title}}</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<!-- 引入窗体 -->
+			        <div th:include="/biz/document/catalog/edit::catalog_edit()"></div>
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class = "fa fa-undo"></i>&nbsp;&nbsp;取消</button>
+			        <button type="button" class="btn btn-outline-primary" @click = "save()"><i class = "fa fa-floppy-o"></i>&nbsp;&nbsp;保存</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- 选择父目录窗体 -->
+			<div class="modal fade" id="parentCatalog" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="parentCatalogLabel" aria-hidden="true">
+			  <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <!--h5 class="modal-title" id="parentCatalogLabel">父目录</h5-->
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class = "row" id = "nodes">
+						<div class = "col-sm-12">
+							<!-- 目录树 -->
+							<ul id = "tree" class = "ztree"></ul>
+						</div>
+					</div>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+		</div>
+		<script>
+			var module = [[${module}]]
+			var zTree = null;	//目录树	
+		   	var setting = {		//树配置
+		        check: {
+		            enable: false
+		        },
+		        view: {
+		            dblClickExpand: false,
+		            showLine: true,
+		            selectedMulti: false
+		        },
+		        data: {
+		            simpleData: {
+		                enable:true,
+		                idKey: "id",
+		                pIdKey: "pId",
+		                rootPId: ""
+		            }
+		        },
+		        callback: {
+		            beforeClick: function(treeId, treeNode) {
+		            	var ps = [];
+		     		    ps.push(treeNode.name);
+		     		    var pn =  treeNode.getParentNode();
+		     		    while(pn != null){
+		     		    	ps.push(pn.name);
+		     		    	pn = pn.getParentNode();
+		     		    }
+		     		    var path = [];
+		     		    for(var i = ps.length - 1; i >= 0; i--){
+		     		    	path.push(ps[i]);
+		     		    }
+		     		    vm.parent = treeNode.id;
+		     		    vm.path = path.join("/");
+		     		  	modalSwitch("parentCatalog", 0);
+		            }
+		        }
+		    };
+			var vm = new Vue({
+				el:"#catalogdiv",
+				data:{
+					title:"",		//窗体名称
+					name:"",		//目录
+					id:"0",			//目录ID
+					parentYn:0,		//是否是根目录,默认为否
+					disabled:false,	//选择父目录按钮是否可用
+					parent:"",		//父目录ID
+					path:"",		//父目录路径
+					status:1,		//目录状态(0 : 停用  1 : 在用)
+					leaf:0,			//是否最终目录(0 : 否  1 : 是)
+					datas:[],		//获取表格数据
+					total:0,		//获取后台记录总数
+					show:false, 	//是否显示保存结果信息 - 用于模式窗体
+					result:"",		//保存结果信息 - 用于模式窗体
+					yn:[						
+						{"value":1,"view":"是"},
+						{"value":0,"view":"否"}
+					],
+					admin:true
+				},
+				watch:{
+					parentYn:function(val){
+						if(val == 0){
+							this.disabled = false;
+							this.path = '';
+						}else{
+							this.disabled = true;		
+							this.parent = '0';
+							this.path = '/';
+							this.leaf = 0;
+						}
+					}
+				},
+				methods:{
+					doSearch:function(){
+						getData(1);
+					},
+					add:function(){
+						this.show = false;
+						this.result = ""
+						this.title = '新增';						
+						this.name= '';
+						this.id = '';
+						this.parent = '';
+						this.parentYn = 0;
+						this.path = '';
+						this.status = 1;
+						this.leaf = 0;
+						modalSwitch("editCatalog", 1);
+					},
+					edit:function(id, name, parent, path, status, leaf){
+						this.show = false;
+						this.result = ""
+						this.title = '修改';
+						this.name= name;
+						this.id = id;
+						this.parent = parent;
+						if(parent == "0")
+							this.parentYn = 1;
+						this.path = path;
+						this.status = status;
+						this.leaf = leaf;
+						modalSwitch("editCatalog", 1);
+					},
+					save:function(){
+						if($.trim(vm.name) == ""){
+							vm.show = true;
+							vm.result = "请填写目录!"
+							return ;
+						}
+						if($.trim(vm.path) == "" && vm.disabled == false){
+							vm.show = true;
+							vm.result = "请选择父目录!"
+							return ;
+						}
+						if(vm.id == vm.parent){
+							vm.show = true;
+							vm.result = "父目录不能和本目录相同!"
+							return ;
+						}
+						$.ajax({
+							url:"/web/biz/document/catalog/save",
+							type:"post",
+							data:{id:vm.id,name:vm.name,parent:vm.parent,leaf:vm.leaf,status:vm.status},
+							success:function(r){
+								if(r.status == 200){
+									vm.show = false;
+									vm.result = ""
+									modalSwitch("editCatalog", 0);
+									getData(1);		
+								}else{
+									vm.show = true;
+									vm.result = r.message;
+								}
+							},
+							error:function(r){
+								vm.show = true;
+								vm.result = "系统异常,保存失败,请联系管理员!"
+							}
+						})
+					},
+					selectParent:function(){
+						$.ajax({
+							url:"/web/biz/document/catalog/tree",
+							type:"get",
+							data:{},
+							dataType:"json",
+							success:function(r){
+								if(r.status == 200){
+									var t = $("#tree");
+									var zNodes = r.data;
+									zTree = $.fn.zTree.init(t, setting, zNodes);
+									modalSwitch("parentCatalog", 1);
+								}
+							},
+							error:function(r){
+								alert(r.message)
+							}
+						})
+						
+					}
+				},
+				mounted:function(){
+					$('.pagination').bootstrapPaginator({
+			            bootstrapMajorVersion: 3, 				//对应bootstrap版本
+			            size: 'small', 							//分页大小
+			            numberOfPages: 10, 						//显示的条数
+			            /*
+			             *	分页点击事件
+			             * @param event [jquery对象]
+			             * @param originalEvent [dom原生对象]
+			             * @param type [按钮类型]
+			             * @param page [点击按钮对应的页码]
+			             */
+			            onPageClicked: function (event, originalEvent, type, page) {
+			               	getData(page);
+			            }
+			        });
+					getData(1);
+				}
+			});
+			/**
+			*获取数据
+			*/
+			function getData(page){
+				$.ajax({
+					url:"/web/biz/document/catalog/all",
+					type:"get",
+					data:{page:page, limit:10},
+					dataType:"json",
+					success:function(r){
+						if(r.status == 200){
+							vm.total = r.number
+							//重新设置总页数
+							$('.pagination').bootstrapPaginator("setOptions", {
+								currentPage: page, 						//当前页
+								totalPages: Math.ceil(vm.total / 10), 	// 总页数
+							})
+							vm.datas = r.data
+							$("[data-toggle='tooltip']").tooltip();
+						}
+					},
+					error:function(r){
+						alert(r.message)
+					}
+				})
+			}
+		</script>
+	</body>
+</html>

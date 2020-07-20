@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="commons/css::common_css(~{::title}, ~{::link})">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<title>系统登录</title>
+	<link rel = "stylesheet" th:href = "@{/static/css/system/login.css}" media="screen"/>
+</head>
+<body>
+	<!-- 引入公共js文件 -->
+	<div th:replace="commons/js::common_js(~{::script})"></div>
+	<div class="container-fluid" id = "logindiv"><br>
+		<div class = "row lign-items-center">
+			<!--div class = "col-9">
+				<h1>This is for the picture</h1>
+			</div-->
+			<div class = "col-12">
+				<div class = "row justify-content-center" style = "margin-top:50px;">
+					<div class = "col text-center">	
+						<img th:src = "@{/static/images/login-logo.png}" class="img-fluid" alt = "Doosan">
+					</div>
+				</div><br>
+				<div class = "row justify-content-center">
+			    	<div class = "col-3">
+			    		<input type = "text" class = "form-control" style = "border-width:0px 0px 1px 0px;border-style:dashed" name = "name" id = "name" v-model = "name" placeholder = "账号......" required autofocus/>
+			    	</div>
+			    </div><br>
+			    <div class = "row justify-content-center">
+			    	<div class = "col-3">
+			    		<input type = "password" class = "form-control" style = "border-width:0px 0px 1px 0px;border-style:dashed" name = "pwd" id = "pwd" v-model = "pwd" placeholder = "密码......" required/>
+			    	</div>
+			    </div><br>
+			    <div class = "row justify-content-center">
+			    	<div class = "col-3">
+			    		<div class = "row justify-content-center">
+			    			<div class = "col-8">
+			    				<input type = "text" class = "form-control" style = "border-width:0px 0px 1px 0px;border-style:dashed" name = "vcode" id = "vcode" v-model = "vcode" placeholder = "验证码......" required autofocus/>
+			    			</div>
+			    			<div class = "col-4">
+			    				<img src="/system/tool/getRandomCode" class="img-responsive img-rounded center-block" id="codeImage" title="图片看不清？点击重新得到验证码" onclick = "reloadValidator()"/>
+			    			</div>
+			    		</div>
+			    	</div>
+			    </div><br>
+			    <div class = "row justify-content-center" v-if = "show">
+			    	<div class = "col-3 text-center">
+			    		<p class = "text-info">{{message}}</p>
+			    	</div>
+			    </div>
+			    <div class = "row justify-content-center">
+			    	<div class = "col-3">
+			    		<button class="btn btn-lg btn-outline-info btn-block" @click = "login()" :disabled = "disabled">登录</button>
+			    	</div>
+			    </div><br>
+			    <div class = "row justify-content-center" style = "margin-bottom:200px;">
+			    	<div class = "col">
+			    		<p class = "text-center text-secondary">Copyright &copy; 2020 斗山(北京)系统集成有限公司</p>
+			    	</div>
+			    </div>
+			</div>
+		</div>
+	</div>
+	<script>
+		var vm = new Vue({
+			el:"#logindiv",
+			data:{
+				name:"",
+				pwd:"",
+				vcode:"",
+				message:"",
+				show:false,
+				disabled:false
+			},
+			methods:{
+				login:function(){
+					this.disabled = true
+					if($.trim(this.name) == '' || $.trim(this.pwd) == '' || $.trim(this.vcode) == ''){
+						this.show = true
+						this.message = '账号 / 密码 / 验证码不能为空!'
+						this.disabled = false
+						return
+					}
+					$.ajax({
+						url:"/web/system/enter",
+						type:"post",
+						data:{name:$.trim(this.name),pwd:$.trim(this.pwd),vcode:$.trim(this.vcode)},
+						success:function(r){
+							if(r.code == 0){
+								vm.show = true
+								vm.message = r.message
+								vm.disabled = false
+							}else{
+								vm.show = false
+								vm.message = ''
+								vm.disabled = false
+								location.href="/web/system/home";
+							}							
+						},
+						error:function(){
+							vm.show = true
+							vm.message = '登录失败,请联系系统管理员!'
+							vm.disabled = false
+						}
+					})
+				}
+			}
+		});
+		$(function(){
+			//alert(vm.name)
+		})
+		//刷新验证码
+		function reloadValidator(){
+			document.getElementById("codeImage").src = "/system/tool/getRandomCode?"+Math.random();
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.doosan.biz.ddic.hr.dao.mapper.company.CompanyDao">
+	<!-- 新增部门 -->
+	<insert id="insert" parameterType="tb_company">
+		insert into tb_company
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			name,
+			code,	
+			createuserid,
+			createtime,
+			rowver,
+			delflag
+		</trim>			
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			#{name, jdbcType=VARCHAR},
+			#{code, jdbcType=VARCHAR},
+			#{createuserid, jdbcType=VARCHAR},
+			#{createtime, jdbcType=TIMESTAMP},
+			#{rowver, jdbcType=INTEGER},
+			0
+		</trim>
+	</insert>
+	<select id="findAll" parameterType="tb_company" resultType="tb_company">
+		select * from tb_company a where a.delflag = 0
+	</select>
+	<select id = "recordCnt"  parameterType="tb_company" resultType="int">
+		select count(*) from tb_company a where a.delflag = 0
+	</select>	
+	<select id="findById" parameterType="String" resultType="tb_company">
+		select * from tb_company a
+		where a.id = #{id} and a.delflag = 0
+	</select>	
+	<update id="update" parameterType="tb_company">
+		update tb_company 
+		<set>
+			<if test = "name != null">
+				name = #{name, jdbcType=VARCHAR},
+			</if>
+			<if test = "code != null">
+				code = #{code, jdbcType=VARCHAR},
+			</if>			
+			<if test = "modifyuserid != null">
+				modifyuserid = #{modifyuserid, jdbcType=VARCHAR},
+			</if>
+			modifytime = #{modifytime, jdbcType=TIMESTAMP},
+			rowver = #{rowver, jdbcType=INTEGER}
+		</set>
+		where id = #{id, jdbcType=VARCHAR} and delflag = 0
+	</update>
+	<!-- 逻辑删除 -->
+	<update id="delete">
+		update tb_company set delflag = 1
+		where id in
+		<foreach collection="ids" item = "item" index = "index" open = "(" separator="," close = ")">
+			#{item}
+		</foreach>
+	</update>
+	<!-- 物理删除 -->
+	<!--delete id="delete">
+		delete from tb_company
+		where id in
+		<foreach collection="ids" item = "item" index = "index" open = "(" separator="," close = ")">
+			#{item}
+		</foreach>
+	</delete-->
+</mapper>

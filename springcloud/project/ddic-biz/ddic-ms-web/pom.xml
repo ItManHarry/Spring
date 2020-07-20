@@ -1,0 +1,62 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.doosan.biz</groupId>
+    <artifactId>ddic</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>ddic-ms-web</artifactId>
+  <name>ddic-ms-web</name>
+  <description>ddic web</description>
+  <dependencies>
+  	<!-- 导入公共类工程 -->
+  	<dependency>
+  		<groupId>com.doosan.biz</groupId>
+	    <artifactId>ddic-ms-common</artifactId>
+	    <version>0.0.1-SNAPSHOT</version>
+  	</dependency>
+  	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-thymeleaf</artifactId>
+	</dependency>
+	<!-- 导入Eureka客户端 -->
+	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+  	</dependency>
+  	<!-- 导入OpenFeign -->
+  	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-starter-openfeign</artifactId>
+  	</dependency>
+  	<!-- 导入sleuth -->
+  	<!--dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-starter-sleuth</artifactId>
+  	</dependency-->
+  	<!-- 导入zipkin,已经包含了sleuth -->
+  	<dependency>
+  		<groupId>org.springframework.cloud</groupId>
+  		<artifactId>spring-cloud-starter-zipkin</artifactId>
+  	</dependency>
+  	<!-- 导入mysql -->
+    <dependency>
+       <groupId>mysql</groupId>
+       <artifactId>mysql-connector-java</artifactId>
+    </dependency>
+    <!-- spring jpa -->
+  	<dependency>
+  		<groupId>org.springframework.boot</groupId>
+    	<artifactId>spring-boot-starter-data-jpa</artifactId>
+  	</dependency>
+  	<!-- 加载本地AD验证包 -->
+	<dependency>
+		<groupId>doosan.ad.auth</groupId>
+		<artifactId>ad.auth.module</artifactId>
+		<version>1.0</version> 
+	</dependency>
+  </dependencies>
+  <build>
+  	<finalName>ddic-ms-web</finalName>
+  </build>
+</project>

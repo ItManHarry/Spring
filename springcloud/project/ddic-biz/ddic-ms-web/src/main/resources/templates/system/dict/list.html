@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head th:replace="commons/css::common_css(~{::title}, ~{})">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<title>系统下拉字典清单</title>
+	</head>
+	<body>
+		<!-- 引入公共js文件 -->
+		<div th:replace="commons/js::common_js(~{::script})">
+		    <!--加载页面自己的js-->
+		    <script type = "text/javascript" th:src = "@{/static/js/system/nav.js}" charset="UTF-8"></script>
+		</div>
+		<div class="container-fluid" id = "dictdiv"> 
+			<!-- 引入公共nav文件 --> 
+			<div th:include="commons/nav::common_nav()"></div>
+			<div class = "row">
+				<div class = "col-sm-2">
+					<!-- 引入左侧导航栏 -->
+					<div th:include="commons/subnav::left_nav(current_position='系统字典')"></div>
+				</div>
+				<div class = "col-sm-10 text-right">
+					<button id = "add" class = "btn btn-outline-info btn-sm" @click = "add()"><i class = "fa fa-plus"></i>&nbsp;&nbsp;新增</button>&nbsp;&nbsp;
+				</div> 
+			</div>
+			<br>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<div class="table-responsive-sm">
+						<table class = "table table-bordered table-hover table-sm" id = "list">
+							<!--caption><i class="fa fa-hand-o-right" aria-hidden="true"></i>&nbsp;&nbsp;公司组织信息</caption-->
+							<thead>
+								<tr class = "text-center">
+									<th width = "30%">字典代码</th>
+									<th width = "30%">字典名称</th>
+									<th width = "25%">字典状态</th>
+									<th width = "15%">操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for = "data in datas" class = "text-center">
+									<td>{{data.code}}</td>
+									<td>{{data.name}}</td>
+									<td>{{data.status}}</td>
+									<!-- vue拼接超链接方式 -->
+									<!--td>
+										<button class = "btn btn-link" :id = "'edit'+data.id" @click = "edit(data.id)"><i class = "fa fa-cogs"></i></button>
+									</td-->
+									<td>
+										<button  @click = "edit(data.tid,data.code,data.name)" class = "btn btn-link btn-xs text-info" data-toggle="tooltip" data-placement="bottom" title="编辑"><i class = "fa fa-edit"></i></button>
+										<button  @click = "enumMgt(data.tid)" class = "btn btn-link btn-xs text-info" data-toggle="tooltip" data-placement="bottom" title="枚举维护"><i class = "fa fa-list-ol"></i></button>
+										<a :href = "'/web/system/dict/move?id='+data.tid" class = "btn btn-link btn-sm text-info" data-toggle="tooltip" data-placement="bottom" title="停用"><i class = "fa fa-times"></i></a>
+										<a :href = "'/web/system/dict/recover?id='+data.tid" class = "btn btn-link btn-sm text-info" data-toggle="tooltip" data-placement="bottom" title="启用"><i class = "fa fa-check"></i></a>
+									</td>						
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<nav class="text-right">
+					    <ul class="pagination"></ul>
+					</nav>	
+				</div> 
+			</div>
+			<!-- 新增修改字典窗体 -->
+			<div class="modal fade" id="editDictionary" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+			  <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="staticBackdropLabel">{{title}}</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<!-- 引入窗体 -->
+			        <div th:include="/system/dict/edit::dict_edit()"></div>
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class = "fa fa-undo"></i>&nbsp;&nbsp;取消</button>
+			        <button type="button" class="btn btn-outline-primary" @click = "save()"><i class = "fa fa-floppy-o"></i>&nbsp;&nbsp;保存</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<!-- 字典枚举数据维护窗体 -->
+			<div class="modal fade" id="editEnum" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel2" aria-hidden="true">
+			  <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg" role="document">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="staticBackdropLabel2">{{title}}</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<!-- 引入窗体 -->
+			        <div th:include="/system/dict/enums::dict_enum()"></div>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+		</div>
+		<script>
+			var module = [[${module}]]
+			var vm = new Vue({
+				el:"#dictdiv",
+				data:{
+					title:"",	//窗体名称
+					code:"",	//字典代码
+					name:"",	//字典名称
+					id:0,		//字典ID
+					datas:[],	//获取表格数据
+					total:[[${total}]],	//获取后台记录总数
+					eid:0,		//字典枚举ID
+					value:"",	//字典枚举Value-对应option的value属性
+					view:"",	//字典枚举View-对应option的显示
+					saveBtn:"添加",	//枚举保存按钮
+					edatas:[],	//字典枚举数据清单
+					show:false, //是否显示保存结果信息 - 用于模式窗体
+					result:""	//保存结果信息 - 用于模式窗体					
+				},
+				methods:{
+					doSearch:function(){
+						getData(1);
+					},
+					add:function(){
+						this.show = false;
+						this.result = ""
+						this.title = '新增';
+						this.code = '';
+						this.name= '';
+						this.id = 0;
+						modalSwitch("editDictionary", 1);
+					},
+					edit:function(id, code, name){
+						this.show = false;
+						this.result = ""
+						this.title = '修改';
+						this.code = code;
+						this.name = name;
+						this.id = id;
+						modalSwitch("editDictionary", 1);
+					},
+					enumMgt:function(id){
+						this.show = false;
+						this.result = ""
+						this.title = '字典枚举数据';
+						this.id = id;						
+						modalSwitch("editEnum", 1);
+						//加载数据
+						getDictEnums(id);
+					},
+					save:function(){
+						if($.trim(vm.code) == ""){
+							vm.show = true;
+							vm.result = "请填写字典代码!"
+							return ;
+						}
+						if($.trim(vm.name) == ""){
+							vm.show = true;
+							vm.result = "请填写字典名称!"
+							return ;
+						}
+						$.ajax({
+							url:"/web/system/dict/save",
+							type:"post",
+							data:{id:vm.id,code:vm.code,name:vm.name},
+							success:function(r){
+								if(r.status == 200){
+									vm.show = false;
+									vm.result = ""
+									modalSwitch("editDictionary", 0);
+									getData(1);		
+								}else{
+									vm.show = true;
+									vm.result = r.message;
+								}
+							},
+							error:function(r){
+								vm.show = true;
+								vm.result = "系统异常,保存失败,请联系管理员!"
+							}
+						})
+					},
+					saveEnum:function(){
+						if($.trim(vm.value) == ""){
+							vm.show = true;
+							vm.result = "请填写枚举Value!"
+							return ;
+						}
+						if($.trim(vm.view) == ""){
+							vm.show = true;
+							vm.result = "请填写枚举View!"
+							return ;
+						}
+						$.ajax({
+							url:"/web/system/enums/save",
+							type:"post",
+							data:{dictId:vm.id,id:vm.eid,value:vm.value,view:vm.view},
+							success:function(r){
+								if(r.status == 200){
+									vm.clearEnum();
+									getDictEnums(vm.id);		
+								}else{
+									vm.show = true;
+									vm.result = r.message;
+								}
+							},
+							error:function(r){
+								vm.show = true;
+								vm.result = "系统异常,保存失败,请联系管理员!"
+							}
+						})
+					},
+					clearEnum:function(){
+						this.show = false;
+						this.result = ""
+						this.value = "";
+						this.view = "";
+						this.eid = 0;
+						this.saveBtn = "添加";
+					},
+					modifyEnum:function(eid, value , view){
+						this.show = false;
+						this.result = ""
+						this.value = value;
+						this.view = view;
+						this.eid = eid;
+						this.saveBtn = "修改";
+					}
+				},
+				created:function(){
+						
+				}
+			});
+			$(function(){
+				$('.pagination').bootstrapPaginator({
+		            bootstrapMajorVersion: 3, 				//对应bootstrap版本
+		            size: 'small', 							//分页大小
+		            currentPage: 1, 						//当前页
+		            numberOfPages: 10, 						//显示的条数
+		            totalPages: Math.ceil(vm.total / 10), 	//总页数
+		            /*
+		             *	分页点击事件
+		             * @param event [jquery对象]
+		             * @param originalEvent [dom原生对象]
+		             * @param type [按钮类型]
+		             * @param page [点击按钮对应的页码]
+		             */
+		            onPageClicked: function (event, originalEvent, type, page) {
+		               	getData(page);
+		            }
+		        });
+				getData(1);	
+			})
+			/**
+			*获取数据
+			*/
+			function getData(page){
+				$.ajax({
+					url:"/web/system/dict/all",
+					type:"get",
+					data:{page:page, limit:10},
+					dataType:"json",
+					success:function(r){
+						if(r.status == 200){
+							vm.total = r.number
+							//重新设置总页数
+							$('.pagination').bootstrapPaginator("setOptions", {
+								currentPage: page, 						//当前页
+								totalPages: Math.ceil(vm.total / 10), 	// 总页数
+							})
+							vm.datas = r.data
+							$("[data-toggle='tooltip']").tooltip();
+						}
+					},
+					error:function(r){
+						alert(r.message)
+					}
+				})
+			}
+			/**
+			*获取字典对应的枚举数据,传入字典id
+			*/
+			function getDictEnums(id){
+				$.ajax({
+					url:"/web/system/enums/all",
+					type:"get",
+					data:{dictId:vm.id},
+					dataType:"json",
+					success:function(r){
+						if(r.status == 200){							
+							vm.edatas = r.data
+						}else{
+							alert(r.message);
+						}
+					},
+					error:function(r){
+						alert(r.message);
+					}
+				})
+			}
+		</script>
+	</body>
+</html>

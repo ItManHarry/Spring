@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+	<div th:fragment="common_js(scripts)">
+	    <script type = "text/javascript" th:src = "@{/static/js/jquery-3.3.1.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/static/js/popper.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/static/js/bootstrap.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/static/js/bootstrap-paginator.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/static/js/jquery-confirm.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/static/js/vue.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/static/js/axios.min.js}" charset="UTF-8"></script>
+		<script type = "text/javascript" th:src = "@{/static/js/system.js}" charset="UTF-8"></script>
+	    <!--/* Per-page placeholder for additional js */-->
+	    <th:block th:replace="${scripts}" />
+	</div>
+</html>
